@@ -9,9 +9,9 @@ single lines of integer arithmetic that, evaluated over time, produce
 surprisingly rich rhythmic and melodic patterns. It hosts a bank of them, plays
 two at once, and clocks, pitches and modulates them from the rest of your rack.
 
-- **Manual:** <https://keeos.co.uk/docs/ogham-manual/> (or [`docs/ogham-manual.pdf`](docs/ogham-manual.pdf))
-- **Firmware downloads and changelog:** <https://keeos.co.uk/firmware/ogham/>
-- **Module overview:** <https://keeos.co.uk/modules/ogham/>
+- **Manual:** <https://keeos.io/docs/ogham-manual/> (or [`docs/ogham-manual.pdf`](docs/ogham-manual.pdf))
+- **Firmware downloads and changelog:** <https://keeos.io/firmware/ogham/>
+- **Module overview:** <https://keeos.io/modules/ogham/>
 
 > **Status: prototype.** Built and tested on a handful of units, not qualified
 > for production. Published so others can learn from it and build on it. Check

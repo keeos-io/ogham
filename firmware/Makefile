@@ -1,3 +1,17 @@
+# -----------------------------------------------------------------------------
+# Ogham — a dual-voice bytebeat synthesizer for Eurorack
+#
+# Author:     Steven Collins, 2026, Keeos.io
+# Copyright:  (c) 2026 Steven Collins
+#
+# SPDX-FileCopyrightText: 2026 Steven Collins <https://keeos.io>
+# SPDX-License-Identifier: MIT
+#
+# This file is part of the Ogham firmware. See LICENSE-firmware.txt at the
+# repository root for the full licence text.
+# https://github.com/stevec64/keeos-ogham
+# -----------------------------------------------------------------------------
+
 # Ogham Eurorack Bytebeat Module (Daisy Seed Rev4)
 TARGET = ogham_bytebeat
 

@@ -4,7 +4,7 @@ Firmware releases. Each version is tagged here, with both encoder builds attache
 to the corresponding GitHub Release and their SHA-256 published.
 
 Full release notes, and the in-browser flasher, live at
-<https://keeos.co.uk/firmware/ogham/>.
+<https://keeos.io/firmware/ogham/>.
 
 ## 1.09 — 2026-07-30
 

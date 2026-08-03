@@ -25,7 +25,7 @@ two at once, and clocks, pitches and modulates them from the rest of your rack.
 | [`hardware/ogham-merged-v1.0/`](hardware/ogham-merged-v1.0/) | KiCad schematics and PCB — the shipping revision |
 | [`hardware/panel/`](hardware/panel/) | Front panel: artwork, and the panel PCB project |
 | [`hardware/production/`](hardware/production/) | Gerbers, BOM, placement — ready to upload to a fab |
-| [`docs/`](docs/) | The manual, as a PDF |
+| [`docs/`](docs/) | Build instructions, and the manual as a PDF |
 | `lib/` | libDaisy and DaisySP, as pinned submodules |
 
 Only the **current** board revision is published. Earlier prototypes are not
@@ -33,8 +33,9 @@ included, so there is nothing here to fabricate by mistake.
 
 ## Quick start
 
-**To build the firmware** — see [`firmware/README.md`](firmware/README.md) for
-the toolchain and the two encoder variants. In short:
+**To build the firmware** — [`docs/BUILDING.md`](docs/BUILDING.md) has the full
+set-up for Windows, macOS and Linux; [`firmware/README.md`](firmware/README.md)
+covers the firmware itself. In short:
 
 ```bash
 git clone --recurse-submodules https://github.com/stevec64/keeos-ogham.git

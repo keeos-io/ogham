@@ -4,35 +4,30 @@ C++ for the STM32H750 on an Electro-Smith Daisy Seed, built against libDaisy and
 DaisySP. Runs from **internal flash at `0x08000000`** — there is no bootloader
 involved, so the whole 128 KB region is the application.
 
-## Toolchain
-
-- **Arm GNU Toolchain 14.2.Rel1** (`arm-none-eabi-gcc`) — a different version
-  will build fine but will not reproduce the published checksums
-- GNU Make
-- For flashing: **OpenOCD** with an ST-Link, or **dfu-util** over USB
-
 ## Building
 
-From a fresh clone, libraries first:
+Full per-platform setup for **Windows, macOS and Linux** — toolchain, Make, USB
+drivers, udev rules — is in [`../docs/BUILDING.md`](../docs/BUILDING.md). That is
+the authority; this file covers only what is specific to the firmware itself.
+
+The short version, once the tools are installed:
 
 ```bash
 git clone --recurse-submodules https://github.com/stevec64/keeos-ogham.git
 cd keeos-ogham
-make -C lib/libDaisy -j8
-make -C lib/DaisySP  -j8
+make -C lib/libDaisy -j8 && make -C lib/DaisySP -j8
 cd firmware && make -j8            # -> build/ogham_bytebeat.{elf,bin,hex}
 ```
 
-If you cloned without `--recurse-submodules`, fix it with
-`git submodule update --init --recursive`. libDaisy has nested submodules
-(CMSIS, the STM32 HAL); without them the build fails part-way with
-`No rule to make target '.../stm32h7xx_hal.o'`.
+`--recurse-submodules` is not optional — libDaisy has nested submodules, and
+without them the build fails part-way with a missing HAL object. Fix an existing
+clone with `git submodule update --init --recursive`.
 
-Libraries elsewhere? Override the path:
+Libraries elsewhere? `make LIB_DIR=/path/to/libs -j8`.
 
-```bash
-make LIB_DIR=/path/to/libs -j8     # expects $LIB_DIR/libDaisy and $LIB_DIR/DaisySP
-```
+Reproducing a published binary exactly needs **Arm GNU Toolchain 14.2.Rel1** and
+the submodules at their pinned commits; any other compiler builds working
+firmware that simply will not match the release checksum.
 
 ## ⚠ Two encoder builds — pick the right one
 
@@ -55,29 +50,15 @@ differs between them — same version, same behaviour, same display.
 
 ## Flashing
 
-**ST-Link (SWD)** — no button-holding needed:
-
-```bash
-make program        # openocd: program … verify reset exit
-```
-
-Look for `** Verified OK **`. `Target voltage: 0.00V` means the rack is off or
-the SWD header is not seated; `~1.8V` where you expect ~3.3V is a loose contact.
-
-**USB DFU** — hold `BOOT`, tap `RESET`, release `BOOT`, then:
+Commands and platform notes are in [`../docs/BUILDING.md`](../docs/BUILDING.md#flashing).
+In brief: `make program` with an ST-Link, or hold **BOOT**, tap **RESET**, and
 
 ```bash
 dfu-util -a 0 -s 0x08000000:leave -D build/ogham_bytebeat.bin
 ```
 
-The `:leave` suffix matters. Without it the Seed stays parked in DFU mode with a
-blank display, looking dead. A trailing `Error during download get_status` is a
-benign detach artefact — the write still succeeded.
-
-**After flashing, unplug USB before power-cycling.** The Seed is powered by USB
-*and* by the Eurorack bus, so with USB connected, switching the case off does not
-actually reset the chip — the new firmware never starts and the module looks
-broken when it is fine.
+The `:leave` matters, and **unplug USB before power-cycling** — the Seed is
+powered by USB as well as the rack, so the case switch alone does not reset it.
 
 ## Layout
 

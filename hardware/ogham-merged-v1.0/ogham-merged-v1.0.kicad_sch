@@ -1,0 +1,112 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "210f2817-607c-4ec5-bcbe-e08670a34076")
+	(paper "A4")
+	(title_block
+		(title "Keeos Ogham — Merged Board")
+		(date "2026-07-24")
+		(rev "1.0")
+		(company "Keeos")
+	)
+	(lib_symbols)
+	(sheet
+		(at 46.99 39.37)
+		(size 68.58 31.75)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "68bf7a3c-1055-42db-8fb2-0aaf9ab6a30b")
+		(property "Sheetname" "logic-elements"
+			(at 46.99 38.6584 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ogham-logic-v2.0.kicad_sch"
+			(at 46.99 71.7046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 46.99 93.98)
+		(size 69.85 34.29)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "c962fafb-b485-4ead-aae7-c2a89eb79a18")
+		(property "Sheetname" "ui-elements"
+			(at 46.99 93.2684 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ogham-ui-v0.2.kicad_sch"
+			(at 46.99 128.8546 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

@@ -1,0 +1,167 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "bb735c4d-1b56-44f5-a74b-5bf561e488aa")
+	(paper "A3")
+	(title_block
+		(title "Keeos Ogham — Logic Section")
+		(date "2026-07-13")
+		(rev "1.0")
+		(company "Keeos")
+	)
+	(lib_symbols)
+	(sheet
+		(at 40 80)
+		(size 80 40)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "a0000000-0001-0000-0000-000000000001")
+		(property "Sheetname" "Power Supply"
+			(at 40 79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 40 121 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project ""
+				(path "/68bf7a3c-1055-42db-8fb2-0aaf9ab6a30b"
+					(page "#")
+				)
+			)
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/68bf7a3c-1055-42db-8fb2-0aaf9ab6a30b"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 40 135)
+		(size 80 40)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "a0000000-0002-0000-0000-000000000001")
+		(property "Sheetname" "MCU — Daisy Seed"
+			(at 40 134 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mcu.kicad_sch"
+			(at 40 176 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project ""
+				(path "/68bf7a3c-1055-42db-8fb2-0aaf9ab6a30b"
+					(page "#")
+				)
+			)
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/68bf7a3c-1055-42db-8fb2-0aaf9ab6a30b"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 40.64 190.5)
+		(size 80 40)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "a0000000-0004-0000-0000-000000000001")
+		(property "Sheetname" "CV & Gate I/O"
+			(at 40.64 189.5 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "cv_io.kicad_sch"
+			(at 40.64 231.5 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project ""
+				(path "/68bf7a3c-1055-42db-8fb2-0aaf9ab6a30b"
+					(page "#")
+				)
+			)
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/68bf7a3c-1055-42db-8fb2-0aaf9ab6a30b"
+					(page "5")
+				)
+			)
+		)
+	)
+)

@@ -1,0 +1,19 @@
+LIB_DIR ?= ../lib
+
+# Ogham pot-calibration diagnostic (standalone). Build:  make -f Makefile.diag -j8
+# Isolated TARGET + BUILD_DIR so it never touches the shipping ogham_bytebeat build.
+TARGET    = ogham_pot_diag
+BUILD_DIR = build_diag
+
+CPP_SOURCES = \
+	src/diag_pots.cpp \
+	src/ogham_controls.cpp \
+	src/tm1637.cpp
+
+LIBDAISY_DIR = $(LIB_DIR)/libDaisy
+DAISYSP_DIR  = $(LIB_DIR)/DaisySP
+
+C_INCLUDES += -Isrc
+
+SYSTEM_FILES_DIR = $(LIBDAISY_DIR)/core
+include $(SYSTEM_FILES_DIR)/Makefile

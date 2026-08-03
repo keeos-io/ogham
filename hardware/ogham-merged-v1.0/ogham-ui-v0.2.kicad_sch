@@ -1,0 +1,121 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "2f91dcf5-c306-4547-9a40-af87b8dedec5")
+	(paper "A3")
+	(title_block
+		(title "Keeos Ogham — UI Section")
+		(date "2026-07-13")
+		(rev "1.0")
+		(company "Keeos")
+	)
+	(lib_symbols)
+	(sheet
+		(at 40.64 130.81)
+		(size 80.01 39.37)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "4baddd95-ff70-43a0-944f-6d29e4121383")
+		(property "Sheetname" "Audio"
+			(at 40.64 130.0984 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "audio.kicad_sch"
+			(at 40.64 170.7646 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5"
+					(page "3")
+				)
+			)
+			(project ""
+				(path "/c962fafb-b485-4ead-aae7-c2a89eb79a18"
+					(page "#")
+				)
+			)
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 40 80)
+		(size 80 40)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "a0000000-0005-0000-0000-000000000001")
+		(property "Sheetname" "User Interface"
+			(at 40 79 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ui.kicad_sch"
+			(at 40 121 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project ""
+				(path "/c962fafb-b485-4ead-aae7-c2a89eb79a18"
+					(page "#")
+				)
+			)
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18"
+					(page "2")
+				)
+			)
+		)
+	)
+)

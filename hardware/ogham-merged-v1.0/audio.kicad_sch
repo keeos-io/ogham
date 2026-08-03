@@ -1,0 +1,4676 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "c3000000-0000-0000-0000-000000000001")
+	(paper "A3")
+	(title_block
+		(title "Keeos Ogham — Audio Output (Daisy Seed)")
+		(date "2026-07-24")
+		(rev "1.0")
+		(company "Keeos")
+	)
+	(lib_symbols
+		(symbol "Amplifier_Operational:TL072"
+			(pin_names
+				(offset 0.127)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "U"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "TL072"
+				(at 0 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "http://www.ti.com/lit/ds/symlink/tl071.pdf"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Dual Low-Noise JFET-Input Operational Amplifiers, DIP-8/SOIC-8"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_locked" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "dual opamp"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "SOIC*3.9x4.9mm*P1.27mm* DIP*W7.62mm* TO*99* OnSemi*Micro8* TSSOP*3x3mm*P0.65mm* TSSOP*4.4x3mm*P0.65mm* MSOP*3x3mm*P0.65mm* SSOP*3.9x4.9mm*P0.635mm* LFCSP*2x2mm*P0.5mm* *SIP* SOIC*5.3x6.2mm*P1.27mm*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "TL072_1_1"
+				(polyline
+					(pts
+						(xy -5.08 5.08) (xy 5.08 0) (xy -5.08 -5.08) (xy -5.08 5.08)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name "-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "TL072_2_1"
+				(polyline
+					(pts
+						(xy -5.08 5.08) (xy 5.08 0) (xy -5.08 -5.08) (xy -5.08 5.08)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin input line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name "-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "TL072_3_1"
+				(pin power_in line
+					(at -2.54 -7.62 90)
+					(length 3.81)
+					(name "V-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 7.62 270)
+					(length 3.81)
+					(name "V+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Connector_Audio:AudioJack2"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 8.89 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "AudioJack2"
+				(at 0 6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Audio Jack, 2 Poles (Mono / TS)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "audio jack receptacle mono phone headphone TS connector"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Jack*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "AudioJack2_0_1"
+				(rectangle
+					(start -3.81 0)
+					(end -2.54 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start -2.54 3.81)
+					(end 2.54 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0.635 -0.635) (xy 1.27 0) (xy 2.54 0)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 2.54) (xy -0.635 2.54) (xy -0.635 0) (xy -1.27 -0.635) (xy -1.905 0)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "AudioJack2_1_1"
+				(pin passive line
+					(at 5.08 2.54 180)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "T"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:C"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C"
+				(at 0.635 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.9652 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Unpolarized capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "C_0_1"
+				(polyline
+					(pts
+						(xy -2.032 0.762) (xy 2.032 0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.032 -0.762) (xy 2.032 -0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "C_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:R"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "power:+12V"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "+12V"
+				(at 0 3.556 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+12V\""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "+12V_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+12V_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "power:-12V"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "-12V"
+				(at 0 3.556 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"-12V\""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "-12V_0_0"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "-12V_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy 0.762 1.27) (xy 0 2.54) (xy -0.762 1.27) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "power:GND"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "GND"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "GND_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 -1.27) (xy 1.27 -1.27) (xy 0 -2.54) (xy -1.27 -1.27) (xy 0 -1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "GND_1_1"
+				(pin power_in line
+					(at 0 0 270)
+					(length 0)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+	)
+	(text "R_OUT1/R_OUT2 (1k): series output protection.\nOutputs are DC-coupled."
+		(exclude_from_sim no)
+		(at 169.164 203.2 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "235a218f-1d7d-4a50-b9b5-93e2107298bf")
+	)
+	(text "Audio from Daisy Seed PCM3060 codec (stereo, AC-coupled at the Seed)"
+		(exclude_from_sim no)
+		(at 129.54 55.626 0)
+		(effects
+			(font
+				(size 2.54 2.54)
+			)
+			(justify left bottom)
+		)
+		(uuid "3d000001-0001-0001-0001-000000000001")
+	)
+	(text "TL072 non-inverting gain stages (U7A / U7B), powered from +/-12V\nGain = 1 + 10k/2.7k = 4.7x\nNote: U7A uses R_F2+R_G1; U7B uses R_F1+R_G2"
+		(exclude_from_sim no)
+		(at 130.302 88.9 0)
+		(effects
+			(font
+				(size 2.54 2.54)
+			)
+			(justify left bottom)
+		)
+		(uuid "3d000002-0001-0001-0001-000000000001")
+	)
+	(text "Output level: full-scale ~19.5Vpp measured (~2x hot).\nCodec is ~4Vpp (not the ~2Vpp assumed); firmware trims to ~10Vpp for now.\nNext rev: halve gain (R_G 2.7k->6.8k or R_F 10k->3.9k) for ~10Vpp."
+		(exclude_from_sim no)
+		(at 130.302 98 0)
+		(effects
+			(font
+				(size 2.54 2.54)
+			)
+			(justify left top)
+		)
+		(uuid "3d0000a0-0001-0001-0001-0000000000a1")
+	)
+	(text "Reconstruction filter: R_FILT 470R + C_FILT 2.2nF\nfc ~154kHz (anti-imaging, ahead of the gain stage)"
+		(exclude_from_sim no)
+		(at 70.866 119.888 0)
+		(effects
+			(font
+				(size 1.524 1.524)
+			)
+			(justify left bottom)
+		)
+		(uuid "3d000003-0001-0001-0001-000000000001")
+	)
+	(text "R8/R9 (100k) to GND: DC bias reference for the TL072 + inputs.\nREQUIRED - the Seed's codec outputs are AC-coupled with no DC path.\nSets 0V bias, ~0.7Hz HP with the Seed coupling cap."
+		(exclude_from_sim no)
+		(at 73.152 191.516 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c404ad83-8b9b-49c2-8206-c506168edc6f")
+	)
+	(text "C_TL1/C_TL2 (100nF): U7 +/-12V decoupling"
+		(exclude_from_sim no)
+		(at 229.362 181.356 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "eb839d13-de14-421b-b369-a7ef91d1228c")
+	)
+	(junction
+		(at 160.02 134.62)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0344e189-e3ee-4a4b-945d-bf01bee6e944")
+	)
+	(junction
+		(at 160.02 189.23)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "366abf94-3e77-436d-9d20-cd44504fa9bd")
+	)
+	(junction
+		(at 107.95 160.02)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "687e33a6-baca-4cd3-abc4-c79238e986d5")
+	)
+	(junction
+		(at 254 152.4)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "6bc16d14-3691-480a-99aa-040431b10db5")
+	)
+	(junction
+		(at 190.5 125.73)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "87237a05-4695-44e4-ae4a-7a367b779c27")
+	)
+	(junction
+		(at 189.23 180.34)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "938a142d-be35-4e2e-96cc-138929cd0585")
+	)
+	(junction
+		(at 107.95 130.81)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d39eced9-c1df-4145-a352-5e634a14ee59")
+	)
+	(junction
+		(at 128.27 130.81)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d53084cb-6ef7-4c4d-befe-f06dcb214d4a")
+	)
+	(junction
+		(at 128.27 160.02)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ea50e34c-8eb2-41ba-9e35-7d00ed4f09da")
+	)
+	(wire
+		(pts
+			(xy 128.27 160.02) (xy 128.27 162.56)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "05cc57a2-1b65-4479-8052-3cbb2f0dded9")
+	)
+	(wire
+		(pts
+			(xy 160.02 128.27) (xy 165.1 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2fb2d81e-2eaf-42da-9c9a-0d3daf68beb7")
+	)
+	(wire
+		(pts
+			(xy 187.96 134.62) (xy 190.5 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3a19ce4a-2acd-4507-ae6d-7778d0700721")
+	)
+	(wire
+		(pts
+			(xy 189.23 180.34) (xy 194.31 180.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3a27a722-2d96-425a-9d86-4e795a42e616")
+	)
+	(wire
+		(pts
+			(xy 100.33 130.81) (xy 107.95 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000005-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 107.95 130.81) (xy 107.95 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000006-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 107.95 140.97) (xy 107.95 144.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000007-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 107.95 130.81) (xy 128.27 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000008-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 139.7 130.81) (xy 139.7 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000009-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 160.02 143.51) (xy 160.02 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000013-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 100.33 160.02) (xy 107.95 160.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000031-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 107.95 160.02) (xy 107.95 162.56)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000032-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 107.95 170.18) (xy 107.95 173.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000033-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 107.95 160.02) (xy 128.27 160.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000034-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 139.7 160.02) (xy 139.7 177.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000035-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 160.02 189.23) (xy 160.02 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000038-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 160.02 198.12) (xy 160.02 200.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000039-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 254 165.1) (xy 254 167.64)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000106-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 81.28 130.81) (xy 92.71 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000201-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 81.28 160.02) (xy 92.71 160.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c000202-0001-0001-0001-000000000001")
+	)
+	(wire
+		(pts
+			(xy 245.11 152.4) (xy 245.11 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c0ac1e9-0768-4bd0-838b-551f70c08f63")
+	)
+	(wire
+		(pts
+			(xy 128.27 170.18) (xy 128.27 173.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3f30b7cd-81c7-41aa-a0cf-cdbd2a6088de")
+	)
+	(wire
+		(pts
+			(xy 201.93 125.73) (xy 208.28 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4734e25a-a844-488a-b982-3abffd3babce")
+	)
+	(wire
+		(pts
+			(xy 160.02 189.23) (xy 179.07 189.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4c06dc6c-123a-4443-a655-f9f63d8422c1")
+	)
+	(wire
+		(pts
+			(xy 232.41 142.24) (xy 232.41 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "51de2b5a-9b41-4f71-8365-d412ad55ab6d")
+	)
+	(wire
+		(pts
+			(xy 190.5 125.73) (xy 194.31 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5208a7f4-6bbd-4d0d-8ae5-b68ad59f5a84")
+	)
+	(wire
+		(pts
+			(xy 160.02 182.88) (xy 165.1 182.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "52d1f778-db44-47fa-824e-f249ff9d1d1a")
+	)
+	(wire
+		(pts
+			(xy 232.41 161.29) (xy 232.41 165.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "586ec9f0-61bc-4c36-90fc-2b736e25c04b")
+	)
+	(wire
+		(pts
+			(xy 254 152.4) (xy 254 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "66e5a60a-c09b-4d3c-b134-b9d29b392751")
+	)
+	(wire
+		(pts
+			(xy 139.7 177.8) (xy 165.1 177.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6f9a24a3-4b22-45df-baa3-ef1e8cd3c4f8")
+	)
+	(wire
+		(pts
+			(xy 254 147.32) (xy 254 152.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7637886d-b885-4e10-91b0-d4547d402c0c")
+	)
+	(wire
+		(pts
+			(xy 160.02 189.23) (xy 160.02 182.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "87fcf009-85d2-4e58-a4b7-c21450a9f949")
+	)
+	(wire
+		(pts
+			(xy 128.27 160.02) (xy 139.7 160.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8caf0e76-08ed-4963-b270-48ef0510c5fe")
+	)
+	(wire
+		(pts
+			(xy 128.27 140.97) (xy 128.27 144.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9af785b9-2795-4602-8aff-7ed1bf70c6a6")
+	)
+	(wire
+		(pts
+			(xy 139.7 123.19) (xy 165.1 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a14d8c27-bdc1-4fbe-a911-388cb99ec216")
+	)
+	(wire
+		(pts
+			(xy 190.5 125.73) (xy 190.5 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "aaf8263f-edfe-49d0-92bf-6b9374ceab1a")
+	)
+	(wire
+		(pts
+			(xy 160.02 128.27) (xy 160.02 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "af833472-c9d2-4311-80e6-96e08c144526")
+	)
+	(wire
+		(pts
+			(xy 254 137.16) (xy 254 139.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b671d616-1cc6-4b12-b20c-34b4261adcbe")
+	)
+	(wire
+		(pts
+			(xy 128.27 130.81) (xy 139.7 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bf9396a3-0a89-4081-a38a-149ce113985c")
+	)
+	(wire
+		(pts
+			(xy 180.34 125.73) (xy 190.5 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c30cf5e0-88dd-4b22-b079-f540aa291d1a")
+	)
+	(wire
+		(pts
+			(xy 160.02 134.62) (xy 160.02 135.89)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c42aa2ab-5c62-43bb-a85f-c11ee08b8443")
+	)
+	(wire
+		(pts
+			(xy 186.69 189.23) (xy 189.23 189.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ce6c08a3-33c4-4e24-b85d-a2f89446800c")
+	)
+	(wire
+		(pts
+			(xy 160.02 134.62) (xy 180.34 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ceeac332-af82-4bc6-967d-a4d7829c15ac")
+	)
+	(wire
+		(pts
+			(xy 245.11 152.4) (xy 254 152.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "daef5e50-48f0-4c95-9dc7-bded3679376e")
+	)
+	(wire
+		(pts
+			(xy 128.27 130.81) (xy 128.27 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "df52d6a3-82fb-45a2-9657-3fab08d81ecc")
+	)
+	(wire
+		(pts
+			(xy 201.93 180.34) (xy 208.28 180.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "eabb1e41-141d-4f51-a867-09daf5e97f00")
+	)
+	(wire
+		(pts
+			(xy 180.34 180.34) (xy 189.23 180.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f74396f3-265a-4e08-a7bf-439f5669345b")
+	)
+	(wire
+		(pts
+			(xy 189.23 180.34) (xy 189.23 189.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f9b741ed-f1f2-46ed-b32f-97946cf28d97")
+	)
+	(global_label "OUT_L"
+		(shape output)
+		(at 208.28 125.73 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "01d3c23e-ec8b-403f-aef4-0f0e8be87e5b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 208.28 125.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "AUDIO_OUT_L"
+		(shape input)
+		(at 81.28 130.81 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "30000001-0006-0001-0001-000000000001")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 81.28 130.81 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Intersheetref" "${INTERSHEET_REFS}"
+			(at -49.53 27.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+	)
+	(global_label "AUDIO_OUT_R"
+		(shape input)
+		(at 81.28 160.02 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "30000001-0007-0001-0001-000000000001")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 81.28 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Intersheetref" "${INTERSHEET_REFS}"
+			(at -49.53 27.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+	)
+	(global_label "OUT_R"
+		(shape output)
+		(at 208.28 180.34 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b54e6bbf-5cd9-4496-a4bc-8f444683bd0c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 208.28 180.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:-12V")
+		(at 232.41 165.1 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "220c623b-38c5-4aaf-b13e-7aea4625710c")
+		(property "Reference" "#PWR094"
+			(at 232.41 168.91 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "-12V"
+			(at 232.41 169.418 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 232.41 165.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 232.41 165.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 232.41 165.1 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e6f865e0-acab-409e-9ee7-73a224c65e01")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR094")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR059")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR059")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 96.52 130.81 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a100002-0001-0001-0001-000000000001")
+		(property "Reference" "R_FILT1"
+			(at 96.774 127.254 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "470"
+			(at 96.52 134.366 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 96.52 130.81 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 96.52 130.81 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 96.52 130.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C23179"
+			(at 96.52 130.81 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "66a68e1d-c163-414c-aaaa-0678fd04e0b9")
+		)
+		(pin "2"
+			(uuid "8cb10e4b-31c0-40f7-820b-b5e180b9a997")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_FILT1")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_FILT1")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "R_FILT1")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "R_FILT1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 96.52 160.02 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a100003-0001-0001-0001-000000000001")
+		(property "Reference" "R_FILT2"
+			(at 96.52 156.718 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "470"
+			(at 96.52 163.576 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 96.52 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 96.52 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 96.52 160.02 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C23179"
+			(at 96.52 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "9e18ee64-f5f1-4004-be3c-b1085a25c770")
+		)
+		(pin "1"
+			(uuid "339ef030-46d7-448a-b77b-b9079d8e0d03")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_FILT2")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_FILT2")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "R_FILT2")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "R_FILT2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 184.15 134.62 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a100004-0001-0001-0001-000000000001")
+		(property "Reference" "R_F2"
+			(at 186.436 131.826 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k"
+			(at 185.928 137.668 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 184.15 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 184.15 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 184.15 134.62 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 184.15 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "571b4c9a-7192-45de-b735-326d0018101e")
+		)
+		(pin "1"
+			(uuid "0625f31c-c41d-4736-a456-70b890a75aaa")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_F2")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_F2")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "R_F2")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "R_F2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 182.88 189.23 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a100005-0001-0001-0001-000000000001")
+		(property "Reference" "R_F1"
+			(at 185.166 186.436 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k"
+			(at 184.658 192.024 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 182.88 189.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 182.88 189.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 182.88 189.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 182.88 189.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "0ede29c9-f4c9-41ec-a3e1-835c646449df")
+		)
+		(pin "1"
+			(uuid "a72bdfab-44f6-4ebf-a952-afd9bb0fdab6")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_F1")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_F1")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "R_F1")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "R_F1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 160.02 139.7 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a100006-0001-0001-0001-000000000001")
+		(property "Reference" "R_G1"
+			(at 152.654 138.938 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2.7k"
+			(at 153.162 141.478 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 160.02 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 160.02 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 160.02 139.7 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C13167"
+			(at 160.02 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a315b76a-c008-4516-bee4-c875e47b0b31")
+		)
+		(pin "2"
+			(uuid "33b4bb31-cd40-4783-8597-4b5c13adae83")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_G1")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_G1")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "R_G1")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "R_G1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 160.02 194.31 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a100007-0001-0001-0001-000000000001")
+		(property "Reference" "R_G2"
+			(at 153.416 193.294 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2.7k"
+			(at 153.67 195.58 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 160.02 194.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 160.02 194.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 160.02 194.31 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C13167"
+			(at 160.02 194.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "1c25c71e-bf45-4159-bcd5-10bb4992339e")
+		)
+		(pin "1"
+			(uuid "1e37163c-4f0f-478b-a37a-4e7fe8f06fa8")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_G2")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_G2")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "R_G2")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "R_G2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 198.12 125.73 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a100008-0001-0001-0001-000000000001")
+		(property "Reference" "R_OUT1"
+			(at 198.12 122.682 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1k"
+			(at 197.866 129.032 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 198.12 125.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 198.12 125.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 198.12 125.73 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C21190"
+			(at 198.12 125.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "3bd31d28-ea8c-4132-a4d2-aba8516f4cd9")
+		)
+		(pin "1"
+			(uuid "04868c7e-af07-4dce-8af3-b8e25db41acd")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_OUT1")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_OUT1")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "R_OUT1")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "R_OUT1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 198.12 180.34 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a100009-0001-0001-0001-000000000001")
+		(property "Reference" "R_OUT2"
+			(at 198.374 176.784 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1k"
+			(at 198.12 183.642 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 198.12 180.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 198.12 180.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 198.12 180.34 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C21190"
+			(at 198.12 180.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "aa23383c-601c-462d-acbd-9698a6b0fe5c")
+		)
+		(pin "2"
+			(uuid "23b18540-5729-458b-85b0-7fdac3923d18")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_OUT2")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R_OUT2")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "R_OUT2")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "R_OUT2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 107.95 137.16 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a200001-0001-0001-0001-000000000001")
+		(property "Reference" "C_FILT1"
+			(at 112.014 135.636 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2.2nF"
+			(at 113.284 138.43 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 107.95 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 107.95 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 107.95 137.16 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C1604"
+			(at 107.95 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "bd9eded6-8ec2-4850-8ccf-c413ced3a936")
+		)
+		(pin "1"
+			(uuid "226ea6d2-0951-428c-9c0e-1296d8ceb868")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "C_FILT1")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "C_FILT1")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "C_FILT1")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "C_FILT1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 107.95 166.37 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a200002-0001-0001-0001-000000000001")
+		(property "Reference" "C_FILT2"
+			(at 112.522 164.846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2.2nF"
+			(at 112.776 167.64 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 107.95 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 107.95 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 107.95 166.37 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C1604"
+			(at 107.95 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "bb90c676-e51e-42d6-96c8-63b57ab43d3b")
+		)
+		(pin "1"
+			(uuid "3e53c625-e356-408d-8250-5c24f00ceeff")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "C_FILT2")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "C_FILT2")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "C_FILT2")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "C_FILT2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 254 143.51 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a300010-0001-0001-0001-000000000001")
+		(property "Reference" "C_TL1"
+			(at 257.81 141.986 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100nF"
+			(at 257.81 145.288 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 254 143.51 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 254 143.51 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 254 143.51 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 254 143.51 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "70416f69-caab-4a6e-b822-eb03b0b2b4b3")
+		)
+		(pin "1"
+			(uuid "d5f1c99d-d412-4c8b-8ff9-2f8dcc9e9fa6")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "C_TL1")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "C_TL1")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "C_TL1")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "C_TL1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 254 161.29 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3a300011-0001-0001-0001-000000000001")
+		(property "Reference" "C_TL2"
+			(at 257.302 160.528 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100nF"
+			(at 257.556 163.322 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 254 161.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 254 161.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 254 161.29 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 254 161.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "f5a1f54d-1da7-4634-bfdb-2e3c272586b2")
+		)
+		(pin "1"
+			(uuid "87985158-e5ca-4461-892b-4d2a754cca49")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "C_TL2")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "C_TL2")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "C_TL2")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "C_TL2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+12V")
+		(at 254 137.16 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3b000005-0001-0001-0001-000000000001")
+		(property "Reference" "#PWR096"
+			(at 254 140.97 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+12V"
+			(at 253.746 132.588 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 254 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 254 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 254 137.16 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3f733936-2203-4432-8534-e2427c743ed2")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR096")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR089")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR089")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR061")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:-12V")
+		(at 254 167.64 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3b000006-0001-0001-0001-000000000001")
+		(property "Reference" "#PWR097"
+			(at 254 171.45 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "-12V"
+			(at 254 172.466 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 254 167.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 254 167.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 254 167.64 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "2b4b7e0d-5c45-47d5-80ec-9874e8cbf6cf")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR097")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR090")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR090")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR062")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 107.95 144.78 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3b100008-0001-0001-0001-000000000001")
+		(property "Reference" "#PWR089"
+			(at 107.95 148.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 107.95 149.352 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 107.95 144.78 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 107.95 144.78 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 107.95 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "81057904-98a0-4aee-bd89-0a3d4bbecd0d")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR089")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR082")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR082")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR054")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 107.95 173.99 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3b100009-0001-0001-0001-000000000001")
+		(property "Reference" "#PWR090"
+			(at 107.95 177.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 107.95 178.816 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 107.95 173.99 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 107.95 173.99 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 107.95 173.99 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "849b3bea-5f06-4aad-839b-260afbe3dc02")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR090")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR083")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR083")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR055")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 160.02 146.05 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3b100011-0001-0001-0001-000000000001")
+		(property "Reference" "#PWR091"
+			(at 160.02 149.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 160.02 150.114 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 160.02 146.05 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 160.02 146.05 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 160.02 146.05 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "235b2707-8266-4a9a-97eb-009226703630")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR091")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR084")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR084")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR056")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 160.02 200.66 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3b100012-0001-0001-0001-000000000001")
+		(property "Reference" "#PWR092"
+			(at 160.02 204.47 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 160.02 204.47 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 160.02 200.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 160.02 200.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 160.02 200.66 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "6555c22c-b120-4634-9546-19df7e70715f")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR092")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR085")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR085")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR057")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 245.11 154.94 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3b100013-0001-0001-0001-000000000001")
+		(property "Reference" "#PWR095"
+			(at 245.11 158.75 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 245.11 159.334 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 245.11 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 245.11 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 245.11 154.94 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3a7bc4da-be63-49e7-90e8-a327a91a4728")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR095")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR088")
+					(unit 1)
+				)
+			)
+			(project "ogham"
+				(path "/a0000000-0000-0000-0000-000000000001/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR088")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR060")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 128.27 144.78 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "40c53c36-c3b0-436f-b69c-2e7262040841")
+		(property "Reference" "#PWR0101"
+			(at 128.27 148.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 128.27 149.352 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 128.27 144.78 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 128.27 144.78 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 128.27 144.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5e42ec44-e6eb-4555-a896-6dd314f6dc2c")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR0101")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Amplifier_Operational:TL072")
+		(at 172.72 125.73 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "49516dc1-e60f-458d-bf99-25571b4cfffc")
+		(property "Reference" "U7"
+			(at 172.72 115.57 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TL072"
+			(at 172.72 118.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+			(at 172.72 125.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/tl071.pdf"
+			(at 172.72 125.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Dual Low-Noise JFET-Input Operational Amplifiers, DIP-8/SOIC-8"
+			(at 172.72 125.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C67473"
+			(at 172.72 125.73 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "4"
+			(uuid "21f0f697-4d54-4a39-a81f-e80cc4ffeee2")
+		)
+		(pin "2"
+			(uuid "cd1b0c4f-5b88-4b7e-a74b-3d0cb06b98b5")
+		)
+		(pin "1"
+			(uuid "4e57a71d-6de5-4467-bde3-c1351bd4fe07")
+		)
+		(pin "5"
+			(uuid "1f538f93-bd8f-452b-9129-9cd00829603c")
+		)
+		(pin "8"
+			(uuid "6150c3f2-c3a6-45ae-a292-87f98fb50cf3")
+		)
+		(pin "6"
+			(uuid "dc8688d3-0b5e-4758-b142-de4d35469d00")
+		)
+		(pin "7"
+			(uuid "cde0e475-17b3-42fa-ac5c-cb376414804d")
+		)
+		(pin "3"
+			(uuid "bef6c920-b3eb-4440-b8f8-9f61b9b31d00")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "U7")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "U7")
+					(unit 1)
+				)
+			)
+			(project ""
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "U7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+12V")
+		(at 232.41 142.24 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5194da88-743b-4272-8288-d55943a61284")
+		(property "Reference" "#PWR093"
+			(at 232.41 146.05 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+12V"
+			(at 232.41 137.668 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 232.41 142.24 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 232.41 142.24 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 232.41 142.24 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9aef0441-01a0-4ae8-b2c0-4ee783f11b15")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR093")
+					(unit 1)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR058")
+					(unit 1)
+				)
+			)
+			(project "ogham-logic"
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "#PWR058")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 128.27 173.99 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "65694c21-1745-4e28-91a8-f887cec98462")
+		(property "Reference" "#PWR0102"
+			(at 128.27 177.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 128.27 178.562 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 128.27 173.99 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 128.27 173.99 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 128.27 173.99 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "191af082-8701-494f-8e49-b0e8775ce77b")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "#PWR0102")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Amplifier_Operational:TL072")
+		(at 234.95 153.67 0)
+		(unit 3)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "690f4935-be49-4347-8114-50217793568b")
+		(property "Reference" "U7"
+			(at 233.68 152.3999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TL072"
+			(at 233.68 154.9399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+			(at 234.95 153.67 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/tl071.pdf"
+			(at 234.95 153.67 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Dual Low-Noise JFET-Input Operational Amplifiers, DIP-8/SOIC-8"
+			(at 234.95 153.67 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C67473"
+			(at 234.95 153.67 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "4"
+			(uuid "21f0f697-4d54-4a39-a81f-e80cc4ffeee3")
+		)
+		(pin "2"
+			(uuid "cd1b0c4f-5b88-4b7e-a74b-3d0cb06b98b6")
+		)
+		(pin "1"
+			(uuid "4e57a71d-6de5-4467-bde3-c1351bd4fe08")
+		)
+		(pin "5"
+			(uuid "1f538f93-bd8f-452b-9129-9cd00829603d")
+		)
+		(pin "8"
+			(uuid "6150c3f2-c3a6-45ae-a292-87f98fb50cf4")
+		)
+		(pin "6"
+			(uuid "dc8688d3-0b5e-4758-b142-de4d35469d01")
+		)
+		(pin "7"
+			(uuid "cde0e475-17b3-42fa-ac5c-cb376414804e")
+		)
+		(pin "3"
+			(uuid "bef6c920-b3eb-4440-b8f8-9f61b9b31d01")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "U7")
+					(unit 3)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "U7")
+					(unit 3)
+				)
+			)
+			(project ""
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "U7")
+					(unit 3)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 128.27 166.37 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "842771b0-d4e9-45cb-bb48-98c12aaf0fb0")
+		(property "Reference" "R9"
+			(at 125.73 166.37 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 130.81 166.37 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 128.27 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 128.27 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 128.27 166.37 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25803"
+			(at 128.27 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "436b2b73-0a91-413b-b2e2-8167fe0a9120")
+		)
+		(pin "2"
+			(uuid "29cbde0d-cecd-4901-9717-e259eaa98ccf")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 128.27 137.16 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "9bbe6856-5b42-4f06-b89f-42da275ab6e8")
+		(property "Reference" "R8"
+			(at 125.73 137.16 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 130.81 137.16 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 128.27 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 128.27 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 128.27 137.16 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25803"
+			(at 128.27 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3401047a-853c-45da-a755-2184576ad6d0")
+		)
+		(pin "2"
+			(uuid "3b4ab316-9b08-46ee-b1ea-aaaa0f886024")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "R8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Amplifier_Operational:TL072")
+		(at 172.72 180.34 0)
+		(unit 2)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "fa978833-423b-4382-9483-752ec6455b65")
+		(property "Reference" "U7"
+			(at 172.72 170.18 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TL072"
+			(at 172.72 172.72 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+			(at 172.72 180.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/tl071.pdf"
+			(at 172.72 180.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Dual Low-Noise JFET-Input Operational Amplifiers, DIP-8/SOIC-8"
+			(at 172.72 180.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C67473"
+			(at 172.72 180.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "4"
+			(uuid "21f0f697-4d54-4a39-a81f-e80cc4ffeee4")
+		)
+		(pin "2"
+			(uuid "cd1b0c4f-5b88-4b7e-a74b-3d0cb06b98b7")
+		)
+		(pin "1"
+			(uuid "4e57a71d-6de5-4467-bde3-c1351bd4fe09")
+		)
+		(pin "5"
+			(uuid "1f538f93-bd8f-452b-9129-9cd00829603e")
+		)
+		(pin "8"
+			(uuid "6150c3f2-c3a6-45ae-a292-87f98fb50cf5")
+		)
+		(pin "6"
+			(uuid "dc8688d3-0b5e-4758-b142-de4d35469d02")
+		)
+		(pin "7"
+			(uuid "cde0e475-17b3-42fa-ac5c-cb376414804f")
+		)
+		(pin "3"
+			(uuid "bef6c920-b3eb-4440-b8f8-9f61b9b31d02")
+		)
+		(instances
+			(project "ogham-merged-v1.0"
+				(path "/210f2817-607c-4ec5-bcbe-e08670a34076/c962fafb-b485-4ead-aae7-c2a89eb79a18/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "U7")
+					(unit 2)
+				)
+			)
+			(project "ogham-ui-v0.2"
+				(path "/2f91dcf5-c306-4547-9a40-af87b8dedec5/4baddd95-ff70-43a0-944f-6d29e4121383"
+					(reference "U7")
+					(unit 2)
+				)
+			)
+			(project ""
+				(path "/bb735c4d-1b56-44f5-a74b-5bf561e488aa/a0000000-0003-0000-0000-000000000001"
+					(reference "U7")
+					(unit 2)
+				)
+			)
+		)
+	)
+)

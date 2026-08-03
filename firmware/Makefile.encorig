@@ -1,0 +1,37 @@
+LIB_DIR ?= ../lib
+
+# Ogham firmware — ORIGINAL-ENCODER variant (module 1 only).
+#
+# The MAIN build (Makefile) now targets the reversed/swapped-A/B encoder, because
+# that is the part modules 2-5 and everything since actually use. This variant is
+# for the one unit still fitted with the original encoder: it passes
+# -DENC_REVERSED=0, restoring the negation in ogham_controls.cpp. Identical to
+# the normal build in every other respect.
+#
+# Build (own object dir so the differing flag can't collide with the normal build):
+#   make -f Makefile.encorig BUILD_DIR=build_encorig -j8
+# Flash:
+#   openocd ... -c "program ./build_encorig/ogham_bytebeat_encorig.elf verify reset exit"
+#
+# Reverting a unit either way = flash the other build.
+TARGET = ogham_bytebeat_encorig
+C_DEFS = -DENC_REVERSED=0
+
+CPP_SOURCES = \
+	src/ogham_main.cpp \
+	src/ogham_controls.cpp \
+	src/ogham_audio_pipeline.cpp \
+	src/ogham_cv_output.cpp \
+	src/ogham_display.cpp \
+	src/tm1637.cpp \
+	src/bytebeat_engine.cpp \
+	src/formulas.cpp \
+	src/bpm_clock.cpp
+
+LIBDAISY_DIR = $(LIB_DIR)/libDaisy
+DAISYSP_DIR  = $(LIB_DIR)/DaisySP
+
+C_INCLUDES += -Isrc
+
+SYSTEM_FILES_DIR = $(LIBDAISY_DIR)/core
+include $(SYSTEM_FILES_DIR)/Makefile

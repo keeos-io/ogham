@@ -1,0 +1,23 @@
+# Build output
+build/
+build_*/
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+
+# KiCad: per-user view state, locks, caches, and auto-backups
+*.kicad_prl
+*.lck
+~*
+fp-info-cache
+*-backups/
+*.kicad_pcb-bak
+.svg2shenzhen-cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db

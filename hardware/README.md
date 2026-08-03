@@ -20,14 +20,13 @@ fabricate by mistake.
 | Path | Contents |
 |---|---|
 | `ogham-merged-v1.0/` | Schematics (hierarchical: power, MCU, CV I/O, audio, UI), PCB, netlist |
+| `panel/` | Panel artwork SVGs, and `PanelPCB/` — the panel as a fabricable PCB |
+| `production/` | Gerbers, BOM, placement, IPC netlist, and the interactive BOM |
 
 The schematic is a two-level hierarchy: `ogham-merged-v1.0` is the root, and it
 pulls in `ogham-logic-v2.0` (→ power, MCU, CV I/O) and `ogham-ui-v0.2` (→ audio,
 UI). Those two keep the sheet names they had when the design was two separate
 boards — they are **not** old revisions, they are live sub-sheets of this one.
-
-| `panel/` | Panel artwork SVGs, and `PanelPCB/` — the panel as a fabricable PCB |
-| `production/` | Gerbers, BOM, placement, IPC netlist, and the fab checklist |
 
 ## Having the boards made
 
@@ -61,6 +60,28 @@ reference orientation. Step through the placement preview and check the
 polarised parts: diode cathodes (D1, D2, D8, D3, D4, D5, D_OCT1, D_OCT2, D6,
 D7), IC pin-1 (U1–U7), and Q1's collector/emitter. Assembly is **double-sided**,
 so also confirm the top-layer parts really are on top.
+
+## Interactive BOM — use this while assembling
+
+[`production/ogham-merged-v1.0-ibom.html`](production/ogham-merged-v1.0-ibom.html)
+is a single self-contained file: click a line in the BOM and those parts light up
+on the board, front and back, with checkboxes for tracking what you have sourced
+and placed. No install, no network — **download it and open it in a browser**.
+
+> GitHub displays committed HTML as source rather than rendering it, so use the
+> download button rather than clicking through — the file is useless as text and
+> perfectly good once saved.
+
+It carries an **LCSC** column, which doubles as the hand-populate list: a part
+with an LCSC number is machine-assembled, and a part **without** one is yours to
+solder. `C5` shows its bare MPN `TAP106J016SCS`, and the jacks, pots, encoder and
+headers show nothing at all — those are exactly the 19 designators to mark Do Not
+Place.
+
+Regenerate it with [`gen-ibom.sh`](gen-ibom.sh) whenever the board changes; the
+output is committed, so it can otherwise drift from the design. It needs KiCad's
+own Python and [InteractiveHtmlBom](https://github.com/openscopeproject/InteractiveHtmlBom)
+**v2.11.2 or newer** — earlier versions cannot read KiCad 10 files.
 
 ## Hand-populated parts
 

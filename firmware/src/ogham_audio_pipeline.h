@@ -71,10 +71,6 @@ public:
     // out: 2 output channels (Out1 = L, Out2 = R), size samples each.
     void Process(BytebeatEngine& engine, float** out, size_t size);
 
-    // Output level (kept at unity; level handled by a downstream VCA/mixer)
-    void SetLevel(float level) { level_ = level; }
-    float GetLevel() const { return level_; }
-
     // Bipolar lo-fi macro from a 0..1 pot reading.
     //   center (12 o'clock) = clean; CCW = LPF -> drive/wavefold/sat;
     //   CW = HPF -> sample-rate reduction/sat.
@@ -129,8 +125,6 @@ private:
 
     LofiState lofi1_;  // Out1
     LofiState lofi2_;  // Out2
-
-    float level_ = 1.0f;
 
     // FX chain state. Mixes are 0..1 (from the 0..99 config); topology flag.
     float chorusMixF_  = 0.0f;

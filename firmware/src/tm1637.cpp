@@ -17,20 +17,6 @@
 
 using namespace daisy;
 
-// 7-segment encoding table (common cathode, segments: .GFEDCBA)
-static const uint8_t SEGMENT_MAP[] = {
-    0x3F, // 0
-    0x06, // 1
-    0x5B, // 2
-    0x4F, // 3
-    0x66, // 4
-    0x6D, // 5
-    0x7D, // 6
-    0x07, // 7
-    0x7F, // 8
-    0x6F, // 9
-};
-
 // TM1637 commands
 static constexpr uint8_t CMD_DATA    = 0x40;  // Data command: auto-increment
 static constexpr uint8_t CMD_ADDR    = 0xC0;  // Address command: start at 0
@@ -153,22 +139,6 @@ void TM1637::WriteSegments(const uint8_t* segments, uint8_t length) {
     Stop();
 }
 
-void TM1637::ShowNumber(int number) {
-    if (number < 0) number = 0;
-    if (number > 9999) number = 9999;
-
-    uint8_t segs[4];
-    segs[3] = SEGMENT_MAP[number % 10];
-    number /= 10;
-    segs[2] = SEGMENT_MAP[number % 10];
-    number /= 10;
-    segs[1] = (number > 0) ? SEGMENT_MAP[number % 10] : 0;
-    number /= 10;
-    segs[0] = (number > 0) ? SEGMENT_MAP[number % 10] : 0;
-
-    WriteSegments(segs, 4);
-}
-
 void TM1637::ShowChars(uint8_t chars[4]) {
     WriteSegments(chars, 4);
 }
@@ -179,9 +149,9 @@ void TM1637::ShowPrefixNumber(char prefix, int number, bool dpClean) {
 
     uint8_t segs[4];
     segs[0] = Encode(prefix);
-    segs[1] = SEGMENT_MAP[(number / 100) % 10];
-    segs[2] = SEGMENT_MAP[(number / 10) % 10];
-    segs[3] = SEGMENT_MAP[number % 10];
+    segs[1] = Encode('0' + (number / 100) % 10);
+    segs[2] = Encode('0' + (number / 10) % 10);
+    segs[3] = Encode('0' + number % 10);
 
     // Suppress leading zeros in the 3-digit part
     if (number < 100) segs[1] = 0;

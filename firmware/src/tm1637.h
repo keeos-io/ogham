@@ -20,9 +20,6 @@ public:
     // Initialize with CLK and DIO GPIO pin numbers
     void Init(daisy::DaisySeed* seed, int clkPin, int dioPin);
 
-    // Display a number right-aligned (0-9999)
-    void ShowNumber(int number);
-
     // Display 4 raw characters (using segment encoding)
     // chars[0] is leftmost digit
     void ShowChars(uint8_t chars[4]);

@@ -31,11 +31,6 @@ public:
     // For gate output (read from ISR or main loop)
     bool GetClockState() const { return clockHigh_; }
 
-    // Current BPM for display (0 = not yet estimated)
-    float GetBpm() const { return displayBpm_; }
-
-    bool IsLocked() const { return locked_; }
-
 private:
     // FFT configuration
     static constexpr int FFT_SIZE = 256;
@@ -84,7 +79,6 @@ private:
     // BPM result
     float baseBpm_;
     float bpm_;
-    float displayBpm_;
     bool locked_;
 
     // Clock generator (free-running)

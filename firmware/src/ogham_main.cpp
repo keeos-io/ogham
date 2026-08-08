@@ -62,7 +62,7 @@ static BpmClock bpmClock;
 //     future build can read the previously-installed version (e.g. to migrate).
 //     BUMP THIS on every flashed release. ---
 static constexpr int      FW_VER_MAJOR = 1;
-static constexpr int      FW_VER_MINOR = 9;   // 0..99, shown as two digits (v1.09)
+static constexpr int      FW_VER_MINOR = 10;  // 0..99, shown as two digits (v1.10)
 static constexpr uint32_t FW_VERSION   = (uint32_t)FW_VER_MAJOR * 100u + FW_VER_MINOR; // 100 = v1.00
 
 // --- Persisted settings (QSPI). Bump SETTINGS_VERSION to invalidate old layouts. ---
@@ -107,7 +107,6 @@ struct Telemetry {
     uint32_t ioState;      // gateIn | clockIn<<8
     int32_t  out1Formula;
     int32_t  out2Formula;
-    int32_t  delay;
     int32_t  paramA;
     int32_t  paramB;
     float    rate;
@@ -1032,7 +1031,6 @@ int main(void) {
                                 | ((uint32_t)(controls.GetClock() ? 1 : 0) << 8);
             g_telemetry.out1Formula = engine.GetFormula1Index();
             g_telemetry.out2Formula = engine.GetFormula2Index();
-            g_telemetry.delay       = engine.GetDelay();
             g_telemetry.paramA      = engine.GetParamA();
             g_telemetry.paramB      = engine.GetParamB();
             g_telemetry.rate        = engine.GetRate();

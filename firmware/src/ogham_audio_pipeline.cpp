@@ -147,7 +147,6 @@ namespace {
 }
 
 void AudioPipeline::Init() {
-    level_ = 1.0f;
     srrFactor_ = 1;
     hpCoeff_   = 0.0f;
     satAmt_    = 0.0f;
@@ -564,10 +563,10 @@ void AudioPipeline::Process(BytebeatEngine& engine, float** out, size_t size) {
             v1 = ProcessLpg(v1, lofi1_, coeff);
             v2 = ProcessLpg(v2, lofi2_, coeff);
         }
-        out[0][i] = v1 * level_;
+        out[0][i] = v1;
         // The drone deliberately ignores Sync (and Tone + FX), so the LPG -- a
         // Sync-triggered gate -- must not touch it either: it stays a free-run
         // drone under a plucked Out1.
-        out[1][i] = (out2Drone ? o2 : v2) * level_;
+        out[1][i] = out2Drone ? o2 : v2;
     }
 }

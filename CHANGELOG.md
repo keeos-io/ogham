@@ -6,6 +6,20 @@ to the corresponding GitHub Release and their SHA-256 published.
 Full release notes, and the in-browser flasher, live at
 <https://keeos.io/firmware/ogham/>.
 
+## 1.10 — 2026-08-08
+
+Maintenance release: no new user-facing features, no settings-layout change
+(updating from 1.09 does **not** reset your saved settings).
+
+- Firmware source clean-up — removed several accessors and one code path left
+  behind by earlier, since-superseded designs (an unused Out 2 "delay"
+  mechanism, an unused engine freeze, unused polled gate/clock edge
+  detection, among others). No behaviour change.
+- Manual: new Troubleshooting section — the internal LPG being left on with
+  nothing patched to Sync produces total silence on both outputs by design,
+  not a fault; that's now written down instead of only discoverable by
+  re-deriving it live.
+
 ## 1.09 — 2026-07-30
 
 First release published from this repository.

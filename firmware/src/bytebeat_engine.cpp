@@ -16,7 +16,6 @@
 
 static constexpr float OUTPUT_SAMPLE_RATE = 48000.0f;
 static constexpr uint64_t PHASE_ONE = (uint64_t)1 << 32;
-static constexpr int MAX_DELAY = 99;  // fits the "d-NN" display
 
 // Param interpolation (daisy-gac). Quantise A,B to a grid of step q and
 // bilinearly crossfade the formula's OUTPUTS at the 4 surrounding grid corners
@@ -48,9 +47,7 @@ void BytebeatEngine::Init() {
     tChanged_ = false;
     prevA_ = curA_ = 0;
     prevB_ = curB_ = 0;
-    delay_ = 0;
     rateMultiplier_ = 1.0f;
-    frozen_ = false;
     pitchSyncInc_ = 0.0f;
     pitchSyncPhase_ = 0.0f;
     out2Decoupled_ = false;
@@ -94,12 +91,6 @@ void BytebeatEngine::SetFormula2(int index) {
     formula2_ = GetFormulaAt(index);
 }
 
-void BytebeatEngine::SetDelay(int cycles) {
-    if (cycles < 0) cycles = 0;
-    if (cycles > MAX_DELAY) cycles = MAX_DELAY;
-    delay_ = cycles;
-}
-
 void BytebeatEngine::SetRate(float rate) {
     if (rate < 0.001f) rate = 0.001f;
     if (rate > 100.0f) rate = 100.0f;
@@ -138,7 +129,7 @@ void BytebeatEngine::RestoreOut2Drone(uint64_t inc, int32_t a, int32_t b) {
     phase2_ = 0;
     t2_ = 0;
     const FormulaInfo* f2 = (const FormulaInfo*)formula2_;
-    curB2_ = EvalInterp(f2, 0u - (uint32_t)delay_, a, b, paramQuant_);
+    curB2_ = EvalInterp(f2, 0u, a, b, paramQuant_);
     prevB2_ = curB2_;
     out2Decoupled_ = true;
 }
@@ -170,13 +161,13 @@ void BytebeatEngine::Process(float& out1, float& out2) {
         t_ = 0;
         curA_ = EvalInterp(f1, 0, paramA_, paramB_, paramQuant_);
         prevA_ = curA_;
-        curB_ = EvalInterp(f2, 0u - (uint32_t)delay_, paramA_, paramB_, paramQuant_);
+        curB_ = EvalInterp(f2, 0u, paramA_, paramB_, paramQuant_);
         prevB_ = curB_;
     }
 
     tChanged_ = false;
 
-    if (!frozen_) {
+    {
         uint32_t prevT = t_;
         phase_ += phaseIncrement_;
         uint32_t newT = (uint32_t)(phase_ >> 32);
@@ -186,11 +177,11 @@ void BytebeatEngine::Process(float& out1, float& out2) {
             t_ = newT;
             prevA_ = curA_;
             curA_ = EvalInterp(f1, newT, paramA_, paramB_, paramQuant_);
-            // Out2 rides the master phase + live A/B while COUPLED (lags Out1 by
-            // 'delay' cycles). When decoupled it's driven by its own phase below.
+            // Out2 rides the master phase + live A/B while COUPLED. When
+            // decoupled it's driven by its own phase below.
             if (!out2Decoupled_) {
                 prevB_ = curB_;
-                curB_ = EvalInterp(f2, newT - (uint32_t)delay_, paramA_, paramB_, paramQuant_);
+                curB_ = EvalInterp(f2, newT, paramA_, paramB_, paramQuant_);
             }
         }
 
@@ -203,7 +194,7 @@ void BytebeatEngine::Process(float& out1, float& out2) {
             if (newT2 != prevT2) {
                 t2_ = newT2;
                 prevB2_ = curB2_;
-                curB2_ = EvalInterp(f2, newT2 - (uint32_t)delay_, paramA2_, paramB2_, paramQuant_);
+                curB2_ = EvalInterp(f2, newT2, paramA2_, paramB2_, paramQuant_);
             }
         }
     }

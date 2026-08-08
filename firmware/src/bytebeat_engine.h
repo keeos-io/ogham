@@ -39,13 +39,6 @@ public:
     void SetFormula2(int index);
     int GetFormula1Index() const { return formula1Index_; }
     int GetFormula2Index() const { return formula2Index_; }
-    const FormulaInfo* GetFormula1() const {
-        return const_cast<const FormulaInfo*>(formula1_);
-    }
-
-    // Out2 delay relative to Out1, in whole bytebeat cycles (8kHz steps).
-    void SetDelay(int cycles);
-    int GetDelay() const { return delay_; }
 
     // Shared parameters A and B (both voices use these)
     void SetParamA(int32_t a) { paramA_ = a; }
@@ -96,10 +89,6 @@ public:
     // next audio sample in Process(), which restarts the waveform at t=0.
     void SyncReset() { syncPending_ = true; }
 
-    // Freeze: stop advancing t
-    void SetFreeze(bool freeze) { frozen_ = freeze; }
-    bool GetFreeze() const { return frozen_; }
-
 private:
     void UpdatePhaseIncrement();  // from voice 1's base sample rate
 
@@ -133,7 +122,6 @@ private:
     volatile int formula2Index_ = 0;
     volatile const FormulaInfo* formula2_ = nullptr;
     uint8_t prevB_ = 0, curB_ = 0;
-    volatile int delay_ = 0;  // whole cycles
 
     // Shared parameters (volatile: written by main loop, read by audio ISR)
     volatile int32_t paramA_ = 1;
@@ -141,5 +129,4 @@ private:
     volatile int paramQuant_ = 0;  // 0/1 = off; else A/B interpolation grid step
 
     float rateMultiplier_ = 1.0f;
-    volatile bool frozen_ = false;
 };

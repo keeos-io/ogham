@@ -82,7 +82,6 @@ void BpmClock::Init() {
 
     baseBpm_ = 0.0f;
     bpm_ = 0.0f;
-    displayBpm_ = 0.0f;
     locked_ = false;
 
     period_ = 0;
@@ -156,11 +155,6 @@ void BpmClock::Update(float rate) {
         bpm_ = baseBpm_ * rate;
         float periodF = 48000.0f * 60.0f / bpm_;
         period_ = (uint32_t)(periodF + 0.5f);
-
-        float rounded = floorf(bpm_ + 0.5f);
-        if (displayBpm_ == 0.0f || fabsf(rounded - displayBpm_) > 1.0f) {
-            displayBpm_ = rounded;
-        }
     }
 }
 
@@ -281,7 +275,6 @@ void BpmClock::RunEstimate(float rate) {
     locked_ = true;
     estimatePending_ = false;
     bpm_ = baseBpm_ * rate;
-    displayBpm_ = floorf(bpm_ + 0.5f);
     float periodF = 48000.0f * 60.0f / bpm_;
     period_ = (uint32_t)(periodF + 0.5f);
 }

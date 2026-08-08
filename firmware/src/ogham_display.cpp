@@ -61,10 +61,6 @@ void Display::ShowVoiceRef(int outputNum, bool dpClean) {
     tm_->ShowChars(segs);
 }
 
-void Display::ShowDelay(int delayCycles, bool dpClean) {
-    ShowLabeled(TM1637::Encode('d'), delayCycles, dpClean);
-}
-
 void Display::ShowFxEdit(int field, int value, bool parallel, bool dpClean, bool blankValue) {
     if (!tm_ || flashing_) return;
     uint8_t segs[4];

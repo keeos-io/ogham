@@ -59,20 +59,11 @@ public:
     // during the blocking ~9ms TM1637 display writes that stall the main loop.
     void SampleEncoder();
 
-    // Gate input (reset)
-    bool GetGateRising() const { return gateRising_; }
-
-    // Clock input
-    bool GetClockRising() const { return clockRising_; }
-
     // --- Telemetry accessors (for the PC monitor) ---
     float GetPot(int i) const { return (i >= 0 && i < 4) ? potValues_[i] : 0.0f; }     // raw ADC0-3
     float GetCvRaw(int i) const { return (i >= 0 && i < 2) ? cvSmoothed_[i] : 0.0f; }  // raw ADC4-5
     bool GetGate() const { return gate_; }
     bool GetClock() const { return clock_; }
-
-    // Map a knob value (0-1) to an integer range [min, max]
-    static int32_t MapKnobToRange(float knob, int32_t min, int32_t max);
 
     // Map a knob value (0-1) to exponential rate (0.25x - 4x)
     static float MapKnobToRate(float knob);
@@ -116,13 +107,9 @@ private:
 
     // Gate state
     bool gate_ = false;
-    bool gateRising_ = false;
-    bool lastGate_ = false;
 
     // Clock state
     bool clock_ = false;
-    bool clockRising_ = false;
-    bool lastClock_ = false;
 
     static constexpr float SMOOTH_COEFF = 0.01f;
     static constexpr float SMOOTH_COEFF_AB = 0.003f;  // Heavier filtering for A/B

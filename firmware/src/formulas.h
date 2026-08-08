@@ -26,10 +26,6 @@ struct FormulaInfo {
     const char* author;
     BytebeatFormula func;
     int baseSampleRate;     // 8000, 11025, 16000, 32000, or 44100
-    int32_t defaultA;       // Default A value (original constant)
-    int32_t defaultB;       // Default B value (original constant)
-    int32_t minA, maxA;     // Useful range for A
-    int32_t minB, maxB;     // Useful range for B
 };
 
 // --- JS-compatible shift helpers ---

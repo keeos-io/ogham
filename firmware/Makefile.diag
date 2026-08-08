@@ -14,10 +14,18 @@
 
 LIB_DIR ?= ../lib
 
-# Ogham pot-calibration diagnostic (standalone). Build:  make -f Makefile.diag -j8
-# Isolated TARGET + BUILD_DIR so it never touches the shipping ogham_bytebeat build.
-TARGET    = ogham_pot_diag
-BUILD_DIR = build_diag
+# Ogham pot-calibration diagnostic (standalone).
+# Build:  make -f Makefile.diag BUILD_DIR=build_diag -j8
+#
+# BUILD_DIR must be passed on the command line, not set here: libDaisy's
+# core/Makefile does an unconditional `BUILD_DIR = build` of its own partway
+# through, which -- because GNU Make expands rule targets/prerequisites at
+# parse time, not at build time -- freezes every object/elf/hex/bin rule to
+# build/ before any assignment made here (even one placed after the `include`
+# below) has a chance to matter. A command-line variable is the one thing with
+# higher precedence than an in-makefile assignment, so it's the only override
+# that actually reaches those rules.
+TARGET = ogham_pot_diag
 
 CPP_SOURCES = \
 	src/diag_pots.cpp \

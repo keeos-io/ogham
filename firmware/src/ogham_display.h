@@ -22,11 +22,9 @@ public:
     // Normal displays (skipped while a param flash is showing):
     //   "X-NN" = output X (1/2) playing numbered function NN (0-based, 00..99)
     //   "X-AA" = output X playing the A440 tuning reference (special slot)
-    //   "d-NN" = Out2 delay in cycles
     // dpClean lights the far-right decimal point when the lo-fi macro is clean.
     void ShowVoice(int outputNum, int functionNum, bool dpClean);
     void ShowVoiceRef(int outputNum, bool dpClean);   // "X-AA" A440 reference
-    void ShowDelay(int delayCycles, bool dpClean);
 
     // Boot: firmware version as "M.mm" (e.g. " 1.00"); the major digit carries the DP.
     void ShowVersion(int major, int minor);

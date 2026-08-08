@@ -65,11 +65,7 @@ void Controls::Init(daisy::DaisySeed* seed,
     encSubAccum_ = 0;
 
     gate_ = false;
-    gateRising_ = false;
-    lastGate_ = false;
     clock_ = false;
-    clockRising_ = false;
-    lastClock_ = false;
 }
 
 void Controls::PrimeSmoothing() {
@@ -166,22 +162,9 @@ void Controls::Process() {
 
     // Gate input (reset)
     gate_ = gateIn_->State();
-    gateRising_ = gate_ && !lastGate_;
-    lastGate_ = gate_;
 
     // Clock input
     clock_ = clockIn_->State();
-    clockRising_ = clock_ && !lastClock_;
-    lastClock_ = clock_;
-}
-
-int32_t Controls::MapKnobToRange(float knob, int32_t min, int32_t max) {
-    if (min >= max) return min;
-    float val = (float)min + knob * (float)(max - min);
-    int32_t result = (int32_t)(val + 0.5f);
-    if (result < min) result = min;
-    if (result > max) result = max;
-    return result;
 }
 
 float Controls::MapKnobToRate(float knob) {

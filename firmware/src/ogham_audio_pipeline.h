@@ -37,22 +37,40 @@ struct FxChainConfig {
     uint8_t out2Drone;  // Out2 decouple/drone (daisy-pcq): 1 = frozen independent voice
     uint8_t cvOutMode;  // CV-out mode (daisy-0pq): 0 = env follower, 1 = DC Out1, 2 = DC Out2
     uint8_t timbreCvRoute; // CV->Timbre routing (daisy-gtw): 0 = normal, 1 = CV A, 2 = CV B
-    uint8_t lpgEnabled; // internal LPG (daisy-nmr): 1 = on (Sync in plucks it), 0 = bypassed
-    uint8_t lpgDecay;   // LPG decay 0..99, exp-mapped 2ms..10s (see LPG_DECAY_MIN/MAX_S)
+    // Internal LPG (daisy-nmr), on/off + decay consolidated into one field
+    // (daisy-*): 0 = off (bypassed), 1..99 = on (Sync in plucks it) with that
+    // decay, exp-mapped 2ms..20s (see LPG_DECAY_MIN/MID/MAX_S) -- the same
+    // curve as when this was two fields, just shifted so 0 means off instead
+    // of a 2ms decay.
+    uint8_t lpgDecay;
+    // CV Out slew + hold (daisy-*): a sample-and-hold decimation stage (cvHold,
+    // DC modes only, capturing on an odd PHASE of each window) followed by a
+    // one-pole smoother (cvSlewRise/cvSlewFall, all CV Out modes -- the last
+    // stage before the DAC regardless of mode). A very slow Rate plus slew/hold
+    // gives a smoothly gliding beat-locked LFO, and the same slew can also just
+    // soften an envelope-follower output. Rise and fall are independent, so a
+    // fast rise can pair with a slow decaying fall. Slew is a plain absolute
+    // time in every mode; the DC modes add a make-up gain (CvOutput).
+    uint8_t cvSlewRise; // 0 = off (instant)
+    uint8_t cvSlewFall; // same mapping, applied when the target is below the current output
+    uint8_t cvHold;     // 0 = off (every tick); else a power-of-2 hold window, 2..256; DC modes only
 };
-// FX menu fields: [0] global on/off, [1..12] = 3 stages x 4 sub-params
-// (level/type/p1/p2), [13] = chain toggle, [14] = param-interp grid (q),
-// [15] = Out2 decouple/drone, [16] = CV-out mode, [17] = CV->Timbre routing,
-// [18] = LPG on/off, [19] = LPG decay. Stage param = 1 + stage*4 + sub.
-static constexpr int FX_NUM_FIELDS   = 20;
+// FX menu fields, in menu order: [0] global on/off, [1] chain toggle,
+// [2..13] = 3 stages x 4 sub-params (level/type/p1/p2), [14] = CV-out mode,
+// [15] = CV Out slew rise, [16] = CV Out slew fall, [17] = CV Out hold, [18] =
+// LPG (consolidated on/off + decay), [19] = CV->Timbre routing, [20] =
+// param-interp grid (q), [21] = Out2 decouple/drone. Stage param = 2 + stage*4 + sub.
+static constexpr int FX_NUM_FIELDS   = 22;
 static constexpr int FX_FIELD_GLOBAL = 0;   // the global on/off
-static constexpr int FX_FIELD_CHAIN  = 13;  // the serial/parallel toggle
-static constexpr int FX_FIELD_QUANT  = 14;  // the A/B param-interp grid (q)
-static constexpr int FX_FIELD_DRONE  = 15;  // Out2 decouple/drone toggle
-static constexpr int FX_FIELD_CVOUT  = 16;  // CV-out mode (env / DC Out1 / DC Out2)
-static constexpr int FX_FIELD_TIMBRECV = 17; // CV->Timbre routing (normal / CV A / CV B)
-static constexpr int FX_FIELD_LPG      = 18; // internal LPG on/off
-static constexpr int FX_FIELD_LPGDECAY = 19; // internal LPG decay (0..99)
+static constexpr int FX_FIELD_CHAIN  = 1;   // the serial/parallel toggle
+static constexpr int FX_FIELD_CVOUT  = 14;  // CV-out mode (env / DC Out1 / DC Out2)
+static constexpr int FX_FIELD_CVSLEWRISE = 15; // CV Out slew, rising (all modes)
+static constexpr int FX_FIELD_CVSLEWFALL = 16; // CV Out slew, falling (all modes)
+static constexpr int FX_FIELD_CVHOLD   = 17; // CV Out sample-and-hold (DC modes only)
+static constexpr int FX_FIELD_LPG      = 18; // internal LPG, consolidated on/off + decay
+static constexpr int FX_FIELD_TIMBRECV = 19; // CV->Timbre routing (normal / CV A / CV B)
+static constexpr int FX_FIELD_QUANT  = 20;  // the A/B param-interp grid (q)
+static constexpr int FX_FIELD_DRONE  = 21;  // Out2 decouple/drone toggle
 static constexpr int FX_TYPE_MAX     = 1;   // 0 = clean, 1 = characterful variant
 
 // Audio pipeline: takes the two engine voices and applies the same lo-fi tone
@@ -98,10 +116,80 @@ public:
     const float* GetCleanBuffer() const { return cleanBuffer_; }
     const float* GetCleanBuffer2() const { return cleanBuffer2_; }
 
+    // Per-sample "CV Out Hold should capture now" flags (daisy-*), mirroring
+    // the clean buffers above. ALREADY DECIMATED -- true only where t hits the
+    // offset phase of the window. The window lives in this class because that
+    // phase is anchored to the engine's t; CvOutput just consumes the flag, so
+    // there is one authority on capture timing. Buffered per-sample because
+    // BytebeatEngine's tick state is only valid for the LAST sample of a
+    // Process() block by the time the audio callback's own loop runs over it.
+    const bool* GetCvCaptureBuffer() const { return cvCaptureBuffer_; }
+    const bool* GetCvCaptureBuffer2() const { return cvCaptureBuffer2_; }
+
+    // Per-sample value for CV Out's Hold stage to capture, -1..1 (daisy-*).
+    // NOT the clean buffers above -- those are linearly interpolated toward
+    // the next t, so at the instant a tick lands they're still near the
+    // PREVIOUS value. This carries either:
+    //   - the engine's raw (un-interpolated) value at t, or
+    // the engine's fresh un-interpolated value at the captured t (the capture
+    // phase is offset, so this is not the degenerate t == 0 phase).
+    const float* GetHoldSampleBuffer() const { return holdSampleBuffer_; }
+    const float* GetHoldSampleBuffer2() const { return holdSampleBuffer2_; }
+
+    // Pick a new random ODD capture phase for CV Out's Hold stage (daisy-*).
+    // Call when the Rate knob moves: it then stays put until the knob moves
+    // again, so nudging Rate re-rolls the LFO's character even if you land back
+    // on the same frequency.
+    //
+    // This selects WHICH PHASE of each hold window the capture lands on. It is
+    // NOT a look-ahead, so it costs no latency at any value and the CV stays
+    // aligned with the audio. (It was a look-ahead once, which put the CV up to
+    // a whole window ahead of the audio -- 2 s at the slowest Rate.)
+    //
+    // Which phase you sit on decides how the capture lines up with the
+    // formula's own periodicity, and that changes how VARIED the CV is far more
+    // than it changes its level, with no way to pick well in advance -- hence a
+    // re-roll gesture rather than a tuned constant.
+    //
+    // Odd: a phase's factors of two divide the reachable output values
+    // (256 >> v2) and phase 0 is the degenerate case that collapses the capture
+    // to a constant. Measured over random formula/A/B/phase draws, odd gives a
+    // flat CV 3.1% of the time (vs 27% for the phase-0 bug this replaced);
+    // curating to the best-measuring phases only reached 2.75%, not worth a
+    // table when a dull roll is one nudge from being replaced.
+    //
+    // `entropy` should be unpredictable at the moment of the call (the
+    // microsecond timer); it is mixed into the generator state.
+    void RerollCvSampleOffset(uint32_t entropy);
+
+    // Capture interval in 48 kHz output samples, per voice (daisy-*). CvOutput
+    // scales its DC-mode slew against this instead of against absolute seconds,
+    // which is what makes the LFO depth independent of the Rate knob. Refreshed
+    // every block from the engine's phase increment.
+    float GetCaptureSamples()  const { return cvCaptureSamples_; }
+    float GetCaptureSamples2() const { return cvCaptureSamples2_; }
+
 private:
     static constexpr size_t MAX_BLOCK_SIZE = 256;
     float cleanBuffer_[MAX_BLOCK_SIZE] = {};
     float cleanBuffer2_[MAX_BLOCK_SIZE] = {};
+    bool  cvCaptureBuffer_[MAX_BLOCK_SIZE] = {};
+    bool  cvCaptureBuffer2_[MAX_BLOCK_SIZE] = {};
+    float holdSampleBuffer_[MAX_BLOCK_SIZE] = {};
+    float holdSampleBuffer2_[MAX_BLOCK_SIZE] = {};
+    // Current ODD capture phase, re-rolled by RerollCvSampleOffset() whenever
+    // the Rate knob moves. Starts at a known-good fixed value so behaviour is
+    // deterministic until the user first touches the knob.
+    int32_t  cvSampleOffset_ = 7;
+    uint32_t cvRngState_ = 0x9E3779B9u;   // xorshift32; entropy mixed in per roll
+    // CV Out Hold window, owned here because the capture phase is anchored to
+    // the engine's t. 1 = off (capture every tick), else the 2..256 window.
+    // Always a power of two so the phase test is a mask, not a division.
+    int   cvHoldTicks_  = 1;
+    float cvCaptureSamples_ = 1.0f, cvCaptureSamples2_ = 1.0f;
+    // Last captured hold-source value per voice, carried across the samples
+    // between captures (and across blocks).
+    float holdSample1_ = 0.0f, holdSample2_ = 0.0f;
 
     float Wavefold(float x);
 

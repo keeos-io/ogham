@@ -18,10 +18,9 @@
 
 // Dual-voice bytebeat engine. One master phase accumulator (clocked by voice 1 /
 // Out1, the primary) produces two independent voices:
-//   Out1 = formula1(t)        (primary; CV/gate are derived from this)
-//   Out2 = formula2(t - delay)
-// Bytebeat formulas are pure functions of t, so the Out2 "delay" is just an
-// argument offset -- no delay buffer is needed.
+//   Out1 = formula1(t)  (primary; CV/gate are derived from this)
+//   Out2 = formula2(t)  (rides the same master phase, unless decoupled -- see
+//                        SetOut2Decoupled -- into an independent drone)
 class BytebeatEngine {
 public:
     void Init();
@@ -30,9 +29,44 @@ public:
     // voices, each linearly interpolated and converted to [-1, 1].
     void Process(float& out1, float& out2);
 
+    // Tick-changed flags: true for the one Process() sample where the voice's
+    // t actually advanced (vs. just being linearly interpolated toward it).
+    // TChanged() is Out1/the master phase; TChanged2() is Out2's OWN t when
+    // decoupled (drone) -- it free-runs independently of the master, so the
+    // master's tick doesn't correspond to Out2's actual step rate. While
+    // coupled, Out2 rides the master phase, so TChanged2() mirrors TChanged().
     bool TChanged() const { return tChanged_; }
+    bool TChanged2() const { return out2Decoupled_ ? tChanged2_ : tChanged_; }
+
+    // How many whole t-steps this ONE Process() sample crossed (0 if none).
+    // Normally 0 or 1, but above Rate ~6x on an 8kHz formula (and at almost
+    // any Rate on a 44.1kHz one) the phase increment exceeds one t-step per
+    // output sample and t jumps several at once. Anything counting ticks must
+    // use THIS, not TChanged() -- a bool saturates at one per sample, which
+    // made CV Out's hold window stop shrinking past Rate ~6x and pinned the
+    // LFO frequency (daisy-*).
+    uint32_t GetTStep() const { return tStep_; }
+    uint32_t GetTStep2() const { return out2Decoupled_ ? tStep2_ : tStep_; }
+    // Raw (un-interpolated) 0-255 sample, the formula's actual value at t --
+    // as opposed to Process()'s output, which is linearly interpolated toward
+    // it across the samples between ticks. GetRawSample() is Out1; GetRawSample2()
+    // is Out2's own curB2_ when decoupled (drone), else the shared curB_
+    // (mirrors TChanged2()'s coupled/decoupled dispatch).
     uint8_t GetRawSample() const { return curA_; }  // Out1 raw (0-255)
+    uint8_t GetRawSample2() const { return out2Decoupled_ ? curB2_ : curB_; }
     uint32_t GetT() const { return t_; }
+    // Out2's own t when decoupled (drone), else the shared master t -- mirrors
+    // GetRawSample2()/GetTStep2(). CV Out's Hold anchors its capture phase to
+    // this, so it must follow the same coupled/decoupled dispatch.
+    uint32_t GetT2() const { return out2Decoupled_ ? t2_ : t_; }
+
+    // Output samples per bytebeat tick, i.e. 48000 / (tick rate). The CV path
+    // needs this to size the capture interval -- see CvOutput. May be BELOW 1
+    // (more than one t-step per output sample) at high Rate; callers that need
+    // a realisable CV update interval floor it themselves. Returns a large
+    // finite value rather than infinity when the engine is effectively stopped.
+    float GetSamplesPerTick() const;
+    float GetSamplesPerTick2() const;  // Out2's own rate when decoupled
 
     // Formula selection (voice 1 = Out1 primary, voice 2 = Out2)
     void SetFormula1(int index);
@@ -52,7 +86,7 @@ public:
     void SetParamQuant(int q) { paramQuant_ = q; }
     int GetParamQuant() const { return paramQuant_; }
 
-    // Rate multiplier (0.25x to 4x; also scaled by external clock)
+    // Rate multiplier (1/64x to 64x; also scaled by external clock)
     void SetRate(float rate);
     float GetRate() const { return rateMultiplier_; }
 
@@ -97,6 +131,7 @@ private:
     uint64_t phaseIncrement_ = 0;
     uint32_t t_ = 0;
     bool tChanged_ = false;
+    uint32_t tStep_ = 0;    // t-steps crossed this sample (0, 1, or a skipped run)
     volatile bool syncPending_ = false;  // hard-sync reset requested by gate EXTI
 
     // V/oct hard-sync pitch: internal per-sample reset accumulator (0 inc = off).
@@ -110,6 +145,8 @@ private:
     uint64_t phase2_ = 0;
     uint64_t phaseIncrement2_ = 0;   // frozen master increment at decouple time
     uint32_t t2_ = 0;
+    bool     tChanged2_ = false;     // true the one sample Out2's OWN t advances
+    uint32_t tStep2_ = 0;            // Out2's own t-steps crossed this sample
     uint8_t  prevB2_ = 0, curB2_ = 0;
     int32_t  paramA2_ = 128, paramB2_ = 128;  // frozen A/B at decouple time
 

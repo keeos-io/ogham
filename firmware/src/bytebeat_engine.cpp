@@ -41,6 +41,28 @@ static inline uint8_t EvalInterp(const FormulaInfo* f, uint32_t t,
     return (uint8_t)(v + 0.5f);
 }
 
+// Output samples per tick = 2^32 / phaseIncrement. Guarded both ends: a zero
+// increment (engine stopped) would divide by zero, and a huge increment at
+// high Rate would round to zero.
+static inline float SamplesPerTickFrom(uint64_t inc) {
+    if (inc == 0) return 1.0e6f;                 // stopped: treat as very slow
+    float s = (float)((double)((uint64_t)1 << 32) / (double)inc);
+    // Deliberately NOT floored at 1: above Rate ~6x there really is more than
+    // one t-step per output sample, and clamping here is what pinned the CV
+    // hold window (and so the LFO frequency) past that point.
+    if (s < 1.0e-3f) s = 1.0e-3f;
+    if (s > 1.0e6f)  s = 1.0e6f;
+    return s;
+}
+
+float BytebeatEngine::GetSamplesPerTick() const {
+    return SamplesPerTickFrom(phaseIncrement_);
+}
+
+float BytebeatEngine::GetSamplesPerTick2() const {
+    return SamplesPerTickFrom(out2Decoupled_ ? phaseIncrement2_ : phaseIncrement_);
+}
+
 void BytebeatEngine::Init() {
     phase_ = 0;
     t_ = 0;
@@ -54,6 +76,7 @@ void BytebeatEngine::Init() {
     phase2_ = 0;
     phaseIncrement2_ = 0;
     t2_ = 0;
+    tChanged2_ = false;
     prevB2_ = curB2_ = 0;
     paramA2_ = paramB2_ = 128;
     SetFormula1(0);
@@ -166,6 +189,7 @@ void BytebeatEngine::Process(float& out1, float& out2) {
     }
 
     tChanged_ = false;
+    tStep_ = 0;
 
     {
         uint32_t prevT = t_;
@@ -174,6 +198,7 @@ void BytebeatEngine::Process(float& out1, float& out2) {
 
         if (newT != prevT) {
             tChanged_ = true;
+            tStep_ = newT - prevT;   // usually 1; >1 when this sample skipped steps
             t_ = newT;
             prevA_ = curA_;
             curA_ = EvalInterp(f1, newT, paramA_, paramB_, paramQuant_);
@@ -188,10 +213,14 @@ void BytebeatEngine::Process(float& out1, float& out2) {
         // Decoupled drone: Out2 free-runs on its own accumulator at the frozen rate
         // with the frozen A/B -- untouched by the master phase, gate or pitch-sync.
         if (out2Decoupled_) {
+            tChanged2_ = false;
+            tStep2_ = 0;
             uint32_t prevT2 = t2_;
             phase2_ += phaseIncrement2_;
             uint32_t newT2 = (uint32_t)(phase2_ >> 32);
             if (newT2 != prevT2) {
+                tChanged2_ = true;
+                tStep2_ = newT2 - prevT2;
                 t2_ = newT2;
                 prevB2_ = curB2_;
                 curB2_ = EvalInterp(f2, newT2, paramA2_, paramB2_, paramQuant_);

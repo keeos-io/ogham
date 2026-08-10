@@ -29,13 +29,21 @@ public:
     // Boot: firmware version as "M.mm" (e.g. " 1.00"); the major digit carries the DP.
     void ShowVersion(int major, int minor);
 
-    // FX editor menu. Field 0: "F.on"/"F.off" (global on/off; state in `value`).
-    // Param fields (1..12): "T x. NN" where T = FX (C/F/P), x = sub (L level,
-    // t type, a param1, b param2), 2nd-digit DP separates name from value NN
-    // (0-99). Chain field (13): "c.Ser"/"c.Par". LPG fields (18, 19):
-    // "L.on"/"L.oFF" and "Ld.NN" decay. The far-right DP mirrors the
-    // lo-fi clean-center indicator (dpClean). blankValue (edit flash) blanks
-    // the value, keeps the label.
+    // FX editor menu, fields in menu order. Field 0: "F.on"/"F.off" (global
+    // on/off; state in `value`). Field 1: "F.Ser"/"F.Par" chain toggle. Param
+    // fields (2..13): "T x. NN" where T = FX (C/F/P), x = sub (L level, t type,
+    // a param1, b param2), 2nd-digit DP separates name from value NN (0-99).
+    // Field 14: "O.En1".."O.dc2" CV-out mode. CV Out fields (15-17): "Sr.NN"
+    // slew rise and "SF.NN" slew fall (independent, shared by every CV Out
+    // mode) and "H.oFF"/"H.NNN" hold (DC modes only; value = the actual tick
+    // count, 2-256, averaged across the window not point-sampled). Field 18:
+    // internal LPG, consolidated on/off + decay -- "Lp.oF" off or "Lp.NN" on
+    // with that decay (value = the raw 0-99 field; 0 means off). Field 19:
+    // "t.oFF"/"t.A"/"t.b" CV->Tone routing. Field 20: "q.oFF".."q.128"
+    // param-interp grid. Field 21: "d.on"/"d.oFF" Out2 drone. The far-right DP
+    // mirrors the lo-fi
+    // clean-center indicator (dpClean). blankValue (edit flash) blanks the
+    // value, keeps the label.
     void ShowFxEdit(int field, int value, bool parallel, bool dpClean, bool blankValue);
 
     // Record a parameter value to flash (e.g., "A238" / "b123"). Cheap: it only

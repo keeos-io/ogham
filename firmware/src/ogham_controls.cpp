@@ -15,6 +15,10 @@
 #include "ogham_controls.h"
 #include <cmath>
 
+// Scans of stillness before leftover sub-steps are discarded (150ms @ 20kHz).
+static constexpr uint16_t ENC_IDLE_CLEAR_SCANS = 3000;
+
+
 // Encoder direction (daisy-0wf). Two encoder batches exist with opposite A/B
 // phase. The DEFAULT is now the reversed/swapped-A/B part, because that is what
 // modules 2-5 (and everything built since) actually use -- having the default
@@ -81,7 +85,8 @@ void Controls::SampleEncoder() {
     // Full-quadrature state machine. QDEC[(prev<<2)|cur] gives the sub-step (+1/-1
     // for a valid single-state transition, 0 for none/invalid). 4 sub-steps in one
     // direction = one detent. Bounce nets to ~0 and never reaches +-4, so it's
-    // rejected. Runs at 1kHz in the audio ISR -> immune to the main-loop display stall.
+    // rejected. Runs on TIM5 at 20kHz -> immune to the main-loop display stall,
+    // and since 2026-08-10 at an NVIC priority the audio callback cannot starve.
     static const int8_t QDEC[16] = {
          0, +1, -1,  0,
         -1,  0,  0, +1,
@@ -89,10 +94,30 @@ void Controls::SampleEncoder() {
          0, -1, +1,  0,
     };
     uint8_t cur = (uint8_t)((encA_.Read() ? 2 : 0) | (encB_.Read() ? 1 : 0));
-    encSubAccum_ += QDEC[(encPrevState_ << 2) | cur];
+    const int8_t q = QDEC[(encPrevState_ << 2) | cur];
+    encSubAccum_ += q;
     encPrevState_ = cur;
     if (encSubAccum_ >= 4)  { encDelta_++; encSubAccum_ -= 4; }
     if (encSubAccum_ <= -4) { encDelta_--; encSubAccum_ += 4; }
+
+    // Residue clear. With the encoder parked at a detent, leftover sub-steps are
+    // debris -- bounce that happened not to cancel, or the tail of a movement a
+    // starved scan tore in half. Left alone that debris is spent cancelling the
+    // first sub-steps of the next click in the OPPOSITE direction, swallowing it
+    // whole; a starved crank was measured leaving encSubAccum_ at -2.
+    //
+    // Clearing on a direction reversal instead would be wrong: ordinary contact
+    // bounce IS a reversal (+1 immediately followed by -1) and must be allowed
+    // to cancel -- 30% of transitions on a brisk turn are bounce pairs, against
+    // 4% on a slow click. So clear on stillness, not on reversal. 150ms is far
+    // longer than the gap between sub-steps within one detent even on a very
+    // deliberate turn, so this can never fire mid-click.
+    if (q != 0) {
+        encIdleScans_ = 0;
+    } else if (encSubAccum_ != 0 && ++encIdleScans_ >= ENC_IDLE_CLEAR_SCANS) {
+        encSubAccum_ = 0;
+        encIdleScans_ = 0;
+    }
 }
 
 void Controls::Process() {
@@ -143,9 +168,9 @@ void Controls::Process() {
 
     // Encoder switch (still main-loop polled; a click spans many iterations).
     encoder_->Debounce();
-    // Rotation comes from the ISR-sampled decoder (SampleEncoder, 1kHz in the audio
-    // callback), NOT encoder_->Increment() -- so detents aren't dropped while the
-    // main loop is stalled in a display write. Drain the accumulator atomically.
+    // Rotation comes from the ISR-sampled decoder (SampleEncoder on TIM5 at 20kHz),
+    // NOT encoder_->Increment() -- so detents aren't dropped while the main loop is
+    // stalled in a display write. Drain the accumulator atomically.
     int32_t d;
     __disable_irq();
     d = encDelta_;
@@ -168,6 +193,7 @@ void Controls::Process() {
 }
 
 float Controls::MapKnobToRate(float knob) {
-    // Exponential mapping: 0.0 -> 0.25x, 0.5 -> 1.0x, 1.0 -> 4.0x
-    return 0.25f * powf(2.0f, 4.0f * knob);
+    // Exponential mapping: 0.0 -> 1/64x, 0.5 -> 1.0x, 1.0 -> 64x (+-6 octaves).
+    // Wide enough to run the engine at LFO-rate speeds for CV Out (daisy-*).
+    return powf(2.0f, 12.0f * knob - 6.0f);
 }

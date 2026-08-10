@@ -65,7 +65,7 @@ public:
     bool GetGate() const { return gate_; }
     bool GetClock() const { return clock_; }
 
-    // Map a knob value (0-1) to exponential rate (0.25x - 4x)
+    // Map a knob value (0-1) to exponential rate (1/64x - 64x)
     static float MapKnobToRate(float knob);
 
 private:
@@ -104,6 +104,7 @@ private:
     volatile int32_t encDelta_ = 0;  // detents accumulated by the ISR, drained by Process()
     int8_t           encSubAccum_ = 0;
     uint8_t          encPrevState_ = 0;  // last (A<<1)|B
+    uint16_t         encIdleScans_ = 0;  // scans since the last sub-step
 
     // Gate state
     bool gate_ = false;

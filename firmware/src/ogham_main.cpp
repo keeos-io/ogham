@@ -46,12 +46,19 @@ static Controls controls;
 // hard 6-8 rev/s crank puts out 576-768 transitions/s. Sampling that from the
 // 1kHz audio callback left barely one sample per transition -- transitions were
 // missed, and a missed transition is a lost detent, exactly at the speeds the
-// encoder ACCELERATION is designed for. TIM5 at 10kHz gives >13 samples per
-// transition even at a full crank. Costs ~0.25% CPU (two GPIO reads + a table
-// lookup). Falls back to the audio callback if the timer won't start.
+// encoder ACCELERATION is designed for. 20kHz gives >26 samples per transition
+// even at a full crank. Costs ~0.25% CPU (two GPIO reads + a table lookup).
+// Falls back to the audio callback if the timer won't start.
+//
+// The rate was 20kHz by accident until 2026-08-10: the period was computed from
+// GetPClk2Freq(), but TIM5 is an APB1 timer and an APB timer's kernel clock is
+// twice PCLK (libDaisy's own GetTickFreq() returns GetPCLK1Freq()*2 for exactly
+// that reason), so a period asking for 10kHz delivered 20kHz. Measured 20.1kHz
+// on module 2. Now computed correctly and 20kHz chosen deliberately, since the
+// headroom turned out to be worth having.
 static TimerHandle encTim;
 static bool encTimerRunning = false;
-static constexpr uint32_t ENC_SCAN_HZ = 10000;
+static constexpr uint32_t ENC_SCAN_HZ = 20000;
 static void EncoderScanCallback(void*) { controls.SampleEncoder(); }
 static TM1637 tm1637;
 static Display display;
@@ -62,11 +69,11 @@ static BpmClock bpmClock;
 //     future build can read the previously-installed version (e.g. to migrate).
 //     BUMP THIS on every flashed release. ---
 static constexpr int      FW_VER_MAJOR = 1;
-static constexpr int      FW_VER_MINOR = 11;  // 0..99, shown as two digits (v1.11)
+static constexpr int      FW_VER_MINOR = 13;  // 0..99, shown as two digits (v1.13)
 static constexpr uint32_t FW_VERSION   = (uint32_t)FW_VER_MAJOR * 100u + FW_VER_MINOR; // 100 = v1.00
 
 // --- Persisted settings (QSPI). Bump SETTINGS_VERSION to invalidate old layouts. ---
-static constexpr uint32_t SETTINGS_VERSION = 12; // v12: FxChainConfig gained the LPG fields (daisy-nmr)
+static constexpr uint32_t SETTINGS_VERSION = 15; // v15: CV Out slew split into independent rise/fall
 struct OghamSettings {
     uint32_t version;
     int out1Formula;
@@ -148,21 +155,21 @@ static bool fxEditing = false; // FX menu: false = navigate fields, true = edit 
 // Live FX-chain config (the 0..99 source of truth; loaded from / saved to QSPI).
 static FxChainConfig g_fx;
 
-// Pointer to a stage param field's value (fields 1..12). Order MUST match
+// Pointer to a stage param field's value (fields 2..13). Order MUST match
 // FxChainConfig, Display::ShowFxEdit, and the menu. Returns nullptr for the
-// global on/off (0) and the chain toggle (13).
+// global on/off (0) and the chain toggle (1).
 static uint8_t* FxFieldPtr(FxChainConfig& f, int field) {
     switch (field) {
-        case 1:  return &f.chorusLevel;  case 2:  return &f.chorusType;  case 3:  return &f.chorusP1;  case 4:  return &f.chorusP2;
-        case 5:  return &f.flangerLevel; case 6:  return &f.flangerType; case 7:  return &f.flangerP1; case 8:  return &f.flangerP2;
-        case 9:  return &f.phaserLevel;  case 10: return &f.phaserType;  case 11: return &f.phaserP1; case 12: return &f.phaserP2;
+        case 2:  return &f.chorusLevel;  case 3:  return &f.chorusType;  case 4:  return &f.chorusP1;  case 5:  return &f.chorusP2;
+        case 6:  return &f.flangerLevel; case 7:  return &f.flangerType; case 8:  return &f.flangerP1; case 9:  return &f.flangerP2;
+        case 10: return &f.phaserLevel;  case 11: return &f.phaserType;  case 12: return &f.phaserP1; case 13: return &f.phaserP2;
         default: return nullptr;
     }
 }
 
-// True for the per-stage "type" sub-field (sub == 1): fields 2, 6, 10.
+// True for the per-stage "type" sub-field (sub == 1): fields 3, 7, 11.
 static inline bool FxFieldIsType(int field) {
-    return field >= 1 && field <= 12 && ((field - 1) % 4) == 1;
+    return field >= 2 && field <= 13 && ((field - 2) % 4) == 1;
 }
 
 // Param-interp grid (q) steps through this discrete list (0 = off). dir = turn.
@@ -212,6 +219,11 @@ static constexpr int ENC_MENU_MED_MULT  = 2;   // detent gap < ENC_MED_MS
 static constexpr float RATE_POT_MIN    = 0.0f;
 static constexpr float RATE_POT_CENTER = 0.459f;   // fleet mean 12 o'clock
 static constexpr float RATE_POT_MAX    = 0.955f;   // fleet full-CW ~0.959, margin so all reach 4x
+// Raw-pot movement needed to re-roll CV Out's sample offset (daisy-*). ~100x
+// the measured ADC noise (~1e-4) so it never self-triggers while stationary,
+// but only ~2 degrees of a 300-degree throw, so a deliberate nudge always lands.
+static constexpr float RATE_REROLL_DEADBAND = 0.008f;
+static float lastRerollPot = -1.0f;   // <0 = not yet adopted (see the use site)
 
 // --- CV->Timbre routing (daisy-gtw) ---
 // Isolate the CV on the A/B jack by partitioning the summed pot+CV signal:
@@ -345,10 +357,15 @@ static void AudioCallback(AudioHandle::InputBuffer in,
     // follower from the processed (post-Lo-Fi) Out1 so it tracks the audible output.
     const float* clean  = pipeline.GetCleanBuffer();
     const float* clean2 = pipeline.GetCleanBuffer2();
+    const bool*  cap1   = pipeline.GetCvCaptureBuffer();
+    const bool*  cap2   = pipeline.GetCvCaptureBuffer2();
+    const float* holdSamp1 = pipeline.GetHoldSampleBuffer();
+    const float* holdSamp2 = pipeline.GetHoldSampleBuffer2();
     for (size_t i = 0; i < size; i++) {
         // Envelope follower + BPM read the FULL-scale audio first (so ENV Out keeps
         // its range), then the audio jacks are attenuated below.
-        cvOutput.ProcessSample(out[0][i], out[1][i], clean[i], clean2[i]);
+        cvOutput.ProcessSample(out[0][i], out[1][i], clean[i], clean2[i],
+                               holdSamp1[i], holdSamp2[i], cap1[i], cap2[i]);
         bpmClock.ProcessSample(clean[i]);
         // Interim gain fix (daisy-qqa): the analog stage runs ~2x hot (~19.4Vpp);
         // halve the digital output to land at the ~10Vpp Eurorack level. Revert to
@@ -500,7 +517,8 @@ int main(void) {
         cfg.periph     = TimerHandle::Config::Peripheral::TIM_5;
         cfg.dir        = TimerHandle::Config::CounterDir::UP;
         cfg.enable_irq = true;
-        cfg.period     = System::GetPClk2Freq() / ENC_SCAN_HZ;
+        // APB1 timer kernel clock = PCLK1 * 2 (NOT PCLK2 -- see ENC_SCAN_HZ).
+        cfg.period     = (HAL_RCC_GetPCLK1Freq() * 2) / ENC_SCAN_HZ;
         if (encTim.Init(cfg) == TimerHandle::Result::OK) {
             encTim.SetCallback(EncoderScanCallback);
             encTimerRunning = (encTim.Start() == TimerHandle::Result::OK);
@@ -616,6 +634,37 @@ int main(void) {
     // --- Start audio now that the params are stable ---
     hw.StartAudio(AudioCallback);
 
+    // --- Let the encoder scan preempt audio (daisy-072) -------------------
+    // Must come AFTER StartAudio: libDaisy assigns the DMA priorities during
+    // audio init, so anything set earlier is overwritten.
+    //
+    // libDaisy gives TIM2-5 the LOWEST NVIC priority (0x0f, per/tim.cpp:293)
+    // while every DMA stream sits at 0 (sys/dma.c), so the audio callback
+    // blocked the encoder scan for its entire duration. Measured on module 2:
+    // at 19.7% load the scan held its full 20kHz with a worst gap of one
+    // period, but at 48.1% the effective rate collapsed to 11.2kHz, 9% of
+    // scans were delayed past 250us, and the worst gap was 549us. Starved that
+    // far, a brisk turn (>1.6 rev/s) crosses two quadrature states between
+    // scans; QDEC decodes an ambiguous transition as 0, so the movement is
+    // DISCARDED rather than deferred. The same brisk gesture decoded 21 detents
+    // at low load and 6 at high -- a 71% loss -- and left encSubAccum_ at -2,
+    // so the damage outlived the gesture.
+    //
+    // Audio still has effective precedence: this trades latency, not
+    // throughput. The scan ISR is ~50 cycles, so 20kHz of it costs ~0.25% of
+    // the core and the callback keeps ~50% slack -- it gets interrupted
+    // briefly, it cannot miss its deadline. Preempt priority cannot go below 0,
+    // so the SAI DMA streams move to 1 and TIM5 takes 0. Streams 0/1 are SAI1
+    // and 3/4 are SAI2 (libDaisy sai.cpp); all four are set so this holds
+    // whichever SAI the board brings up.
+    if (encTimerRunning) {
+        static const IRQn_Type kSaiDmaIrqs[] = {
+            DMA1_Stream0_IRQn, DMA1_Stream1_IRQn,
+            DMA1_Stream3_IRQn, DMA1_Stream4_IRQn };
+        for (IRQn_Type irq : kSaiDmaIrqs) HAL_NVIC_SetPriority(irq, 1, 0);
+        HAL_NVIC_SetPriority(TIM5_IRQn, 0, 0);
+    }
+
     // Belt-and-suspenders: keep the param-flash muted for a short grace at boot.
     uint32_t bootMs = System::GetNow();
     static constexpr uint32_t PARAM_FLASH_GRACE_MS = 600;
@@ -719,17 +768,38 @@ int main(void) {
                         if (nv > 2) nv = 2;
                         g_fx.timbreCvRoute = (uint8_t)nv;
                     } else if (fxField == FX_FIELD_LPG) {
-                        // Internal LPG: CW = on, CCW = off. SetFxChain plucks it
-                        // once on the off->on edge so the change is audible.
-                        g_fx.lpgEnabled = (enc > 0) ? 1 : 0;
-                        pipeline.SetFxChain(g_fx);
-                    } else if (fxField == FX_FIELD_LPGDECAY) {
-                        // LPG decay 0..99 (exp 2ms..10s); accelerates like a param.
+                        // Internal LPG, consolidated on/off + decay (daisy-*): 0 =
+                        // off, 1..99 = on with that decay (2ms..20s exp curve).
+                        // Accelerates like a param; SetFxChain plucks it once on
+                        // the 0->nonzero edge so the change is audible.
                         int nv = (int)g_fx.lpgDecay + delta;
                         if (nv < 0) nv = 0;
                         if (nv > 99) nv = 99;
                         g_fx.lpgDecay = (uint8_t)nv;
                         pipeline.SetFxChain(g_fx);   // live preview
+                    } else if (fxField == FX_FIELD_CVSLEWRISE) {
+                        // CV Out slew, rising 0..99 (exp instant..CV_SLEW_MAX_S);
+                        // accelerates like a param. Applied every loop via
+                        // cvOutput.SetSlewRise() above.
+                        int nv = (int)g_fx.cvSlewRise + delta;
+                        if (nv < 0) nv = 0;
+                        if (nv > 99) nv = 99;
+                        g_fx.cvSlewRise = (uint8_t)nv;
+                    } else if (fxField == FX_FIELD_CVSLEWFALL) {
+                        // CV Out slew, falling -- same mapping/behaviour as rise,
+                        // independent coefficient (daisy-*).
+                        int nv = (int)g_fx.cvSlewFall + delta;
+                        if (nv < 0) nv = 0;
+                        if (nv > 99) nv = 99;
+                        g_fx.cvSlewFall = (uint8_t)nv;
+                    } else if (fxField == FX_FIELD_CVHOLD) {
+                        // CV Out hold: 0 = off (every tick) .. 8 = every 256 ticks,
+                        // power-of-2 steps -- one detent per step, not accelerated
+                        // (only 9 values; matches CVOUT/TIMBRECV's single-step feel).
+                        int nv = (int)g_fx.cvHold + (enc > 0 ? 1 : -1);
+                        if (nv < 0) nv = 0;
+                        if (nv > 8) nv = 8;
+                        g_fx.cvHold = (uint8_t)nv;
                     } else {
                         // Type fields clamp to FX_TYPE_MAX; level/param use 0..99.
                         uint8_t* p = FxFieldPtr(g_fx, fxField);
@@ -830,10 +900,35 @@ int main(void) {
             }
         }
 
-        // Pot 3 -> Rate (exponential 0.25x - 4x), calibrated so 12 o'clock = 1x
-        float rateKnob = CenterNorm(controls.GetRate(),
+        // Pot 3 -> Rate (exponential 1/64x - 64x), calibrated so 12 o'clock = 1x
+        float rawRatePot = controls.GetRate();
+        float rateKnob = CenterNorm(rawRatePot,
                                     RATE_POT_MIN, RATE_POT_CENTER, RATE_POT_MAX);
         float knobRate = Controls::MapKnobToRate(rateKnob);
+
+        // Re-roll CV Out's sample offset whenever the Rate knob actually moves
+        // (daisy-*). Which offset the Hold stage sits on decides how the capture
+        // lines up with the formula's own periodicity, which changes how VARIED
+        // the resulting LFO is far more than it changes its level -- and there's
+        // no way to pick a good one in advance. Tying a re-roll to the knob makes
+        // finding a good one a gesture: nudge Rate, get a different character,
+        // and it then holds still until you nudge again.
+        //
+        // Keyed off the RAW pot, not the derived rate, so it still re-rolls in
+        // clocked mode (where the knob quantises to x/div steps and small moves
+        // wouldn't change the rate at all). The deadband is ~100x the measured
+        // ADC noise (~1e-4) but still only ~2 degrees of a 300-degree throw, so
+        // it can't self-trigger while stationary yet a small deliberate nudge
+        // always lands.
+        if (lastRerollPot < 0.0f) {
+            // First control pass: adopt the knob position WITHOUT rolling, so a
+            // power cycle comes back on the built-in offset and a saved patch
+            // sounds the same as you left it. The first nudge randomises.
+            lastRerollPot = rawRatePot;
+        } else if (fabsf(rawRatePot - lastRerollPot) > RATE_REROLL_DEADBAND) {
+            lastRerollPot = rawRatePot;
+            pipeline.RerollCvSampleOffset(daisy::System::GetUs());
+        }
         if (engine.GetFormula1Index() == GetReferenceIndex()) {
             // A440 reference (daisy-vu3): pin rate to exactly 1x so the tone is a
             // dead-accurate 440Hz, independent of the Rate knob / clock / V-oct.
@@ -852,7 +947,8 @@ int main(void) {
             // Clock In sets the playback rate. With a clock present (or held after
             // a cable-pull) the Rate/Fine pot is a QUANTIZED multiply/divide of the
             // clock rate (/32../2, x1 at noon, x2..x32); with no clock it's the
-            // continuous 0.25x-4x knob. (daisy-79d)
+            // continuous 1/64x-64x knob (wide enough to run the engine at LFO-rate
+            // speeds for CV Out). (daisy-79d)
             engine.SetPitchSync(0.0f);
             if (extClockActive || clockHeld) {
                 // Live clock: pot picks the ratio. Held: freeze the last ratio
@@ -891,6 +987,15 @@ int main(void) {
 
         // CV-out mode (daisy-0pq): env follower / DC Out1 / DC Out2.
         cvOutput.SetMode((CvOutput::Mode)g_fx.cvOutMode);
+        // CV Out slew (rise/fall independent, all modes) + hold (DC modes only).
+        // Capture interval first: the DC-mode slew coefficients are derived
+        // from it, so a Rate change has to land before the slew values are
+        // (re)applied. Both are no-ops unless something actually changed.
+        cvOutput.SetCaptureInterval(pipeline.GetCaptureSamples(),
+                                    pipeline.GetCaptureSamples2());
+        cvOutput.SetSlewRise(g_fx.cvSlewRise);
+        cvOutput.SetSlewFall(g_fx.cvSlewFall);
+        cvOutput.SetHold(g_fx.cvHold);
 
         // --- Gate In: hard-sync reset is handled by the EXTI ISR (sample-
         //     accurate), not polled here. ---
@@ -964,8 +1069,10 @@ int main(void) {
                 else if (fxField == FX_FIELD_DRONE)  val = g_fx.out2Drone;
                 else if (fxField == FX_FIELD_CVOUT)  val = g_fx.cvOutMode;
                 else if (fxField == FX_FIELD_TIMBRECV) val = g_fx.timbreCvRoute;
-                else if (fxField == FX_FIELD_LPG)      val = g_fx.lpgEnabled;
-                else if (fxField == FX_FIELD_LPGDECAY) val = g_fx.lpgDecay;
+                else if (fxField == FX_FIELD_LPG)      val = g_fx.lpgDecay;
+                else if (fxField == FX_FIELD_CVSLEWRISE) val = g_fx.cvSlewRise;
+                else if (fxField == FX_FIELD_CVSLEWFALL) val = g_fx.cvSlewFall;
+                else if (fxField == FX_FIELD_CVHOLD)   val = (g_fx.cvHold == 0) ? 0 : (1 << g_fx.cvHold);
                 else if (fxField != FX_FIELD_CHAIN)  val = *FxFieldPtr(g_fx, fxField);
                 // Edit mode: flash the value at ~80% duty (~600ms period) so it's
                 // clear you're editing vs navigating.

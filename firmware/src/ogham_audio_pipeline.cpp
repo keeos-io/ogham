@@ -198,9 +198,25 @@ FxChainConfig AudioPipeline::DefaultFxChain() {
     c.out2Drone    = 0;  // Out2 coupled (normal) by default
     c.cvOutMode    = 0;  // CV out = envelope follower of Out1 by default
     c.timbreCvRoute = 0; // CV A/B -> Param A/B (normal) by default
-    c.lpgEnabled   = 0;  // LPG off (the module drones freely until you ask for a gate)
-    c.lpgDecay     = 20; // ~60 ms: a short, percussive pluck (was 40 pre-daisy-ygh)
+    c.lpgDecay     = 0;  // LPG off (the module drones freely until you ask for a gate)
+    c.cvSlewRise   = 0;  // CV Out slew off (instant; matches pre-daisy-* behaviour)
+    c.cvSlewFall   = 0;  // CV Out slew off (instant; matches pre-daisy-* behaviour)
+    c.cvHold       = 0;  // CV Out hold off (every tick; matches pre-daisy-* behaviour)
     return c;
+}
+
+// xorshift32 with the caller's entropy folded in, so the sequence differs
+// every power-up AND with the exact moment the knob moved. Result is forced
+// odd (1..255): see the header for why even offsets lose resolution and why
+// offset 0 is the degenerate case.
+void AudioPipeline::RerollCvSampleOffset(uint32_t entropy) {
+    cvRngState_ ^= entropy;
+    uint32_t x = cvRngState_ ? cvRngState_ : 0x9E3779B9u;
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    cvRngState_ = x;
+    cvSampleOffset_ = (int32_t)(((x >> 8) & 0x7Fu) * 2u + 1u);   // odd, 1..255
 }
 
 void AudioPipeline::SetFxChain(const FxChainConfig& c) {
@@ -213,7 +229,7 @@ void AudioPipeline::SetFxChain(const FxChainConfig& c) {
     flangerType_ = c.flangerType;
     phaserType_  = c.phaserType;
 
-    // ---- Internal LPG (daisy-nmr) ----
+    // ---- Internal LPG (daisy-nmr), consolidated on/off + decay (daisy-*) ----
     {
         float decay = LpgDecaySeconds(c.lpgDecay);
         // Solve the undershoot one-pole for "reaches exactly 0 after `decay`":
@@ -225,14 +241,22 @@ void AudioPipeline::SetFxChain(const FxChainConfig& c) {
         if (attack > LPG_ATTACK_MAX_S) attack = LPG_ATTACK_MAX_S;
         lpgAttackInc_ = 1.0f / (attack * 48000.0f);
 
-        const bool on = (c.lpgEnabled != 0);
+        const bool on = (c.lpgDecay != 0);
         // Switching the LPG ON plucks it once: without a trigger the gate sits
         // shut, so the menu edit would otherwise just drop the module to silence
         // with no clue why. One pluck confirms the setting AND the decay you've
-        // dialled in. Switching OFF reopens the gate (env is then unused).
+        // dialled in. Switching OFF (dialled back to 0) reopens the gate (env
+        // is then unused).
         if (on && !lpgEnabled_) lpgTrigPending_ = true;
         lpgEnabled_ = on;
     }
+
+    // ---- CV Out Hold window (daisy-*) ----
+    // The window lives here, not in CvOutput, because the capture phase is
+    // anchored to the engine's t. CvOutput just consumes a ready-made capture
+    // flag, so there is only ever one authority on when a capture happens.
+    // Always a power of two, which lets the phase test be a mask.
+    cvHoldTicks_ = (c.cvHold == 0) ? 1 : (1 << c.cvHold);   // 1 = off, else 2..256
 
     // ---- Chorus: type 0 clean (1 voice), type 1 Ensemble (3 detuned voices) ----
     if (chorusType_ == 1) {
@@ -474,30 +498,57 @@ void AudioPipeline::ProcessFx(float& l, float& r) {
     }
     float p2 = bpPhase_ + 0.25f; if (p2 >= 1.0f) p2 -= 1.0f;  // voice-2 sweep offset
 
+    // Skip a stage whose level is 0 (daisy-1dx). The stages are not cheap and
+    // they were previously all evaluated regardless, with MixStage discarding
+    // the result -- a one-effect patch paid for three. Measured cost of a
+    // skipped stage, per sample for both voices: chorus 249 (657 as Ensemble),
+    // flanger 277 (692 as Barber-pole), phaser 859 (1741 as 8-pole Bi-phase).
+    //
+    // The variant phasors above are deliberately OUTSIDE this: they must keep
+    // running while their stage is silent, or the sweep would jump when the
+    // level is raised again.
+    //
+    // A skipped delay-line stage does go stale, so re-enabling it can play a
+    // few ms of old audio. In practice the level is raised a step at a time
+    // from the encoder, so the first samples come in at a near-zero mix and the
+    // line (~7 ms) has refilled long before the mix is audible. The phaser has
+    // no delay line, only one-sample allpass state, so it settles immediately.
+    const bool doCh = chorusMixF_  > 0.0f;
+    const bool doFl = flangerMixF_ > 0.0f;
+    const bool doPh = phaserMixF_  > 0.0f;
+
     if (fxParallel_) {
         float dl = l, dr = r;
         float al = dl, ar = dr;
-        al += chorusMixF_  * (ProcessChorus(dl, chorus1_)                 - dl);
-        ar += chorusMixF_  * (ProcessChorus(dr, chorus2_)                 - dr);
-        al += flangerMixF_ * (ProcessFlanger(dl, flanger1_, bpFl1_, bpPhase_) - dl);
-        ar += flangerMixF_ * (ProcessFlanger(dr, flanger2_, bpFl2_, p2)       - dr);
-        al += phaserMixF_  * (ProcessPhaser(dl, phaser1_, biLfo)          - dl);
-        ar += phaserMixF_  * (ProcessPhaser(dr, phaser2_, biLfo)          - dr);
+        if (doCh) {
+            al += chorusMixF_  * (ProcessChorus(dl, chorus1_)                 - dl);
+            ar += chorusMixF_  * (ProcessChorus(dr, chorus2_)                 - dr);
+        }
+        if (doFl) {
+            al += flangerMixF_ * (ProcessFlanger(dl, flanger1_, bpFl1_, bpPhase_) - dl);
+            ar += flangerMixF_ * (ProcessFlanger(dr, flanger2_, bpFl2_, p2)       - dr);
+        }
+        if (doPh) {
+            al += phaserMixF_  * (ProcessPhaser(dl, phaser1_, biLfo)          - dl);
+            ar += phaserMixF_  * (ProcessPhaser(dr, phaser2_, biLfo)          - dr);
+        }
         l = al; r = ar;
     } else {
-        l = MixStage(l, ProcessChorus(l, chorus1_),                 chorusMixF_);
-        r = MixStage(r, ProcessChorus(r, chorus2_),                 chorusMixF_);
-        l = MixStage(l, ProcessFlanger(l, flanger1_, bpFl1_, bpPhase_), flangerMixF_);
-        r = MixStage(r, ProcessFlanger(r, flanger2_, bpFl2_, p2),       flangerMixF_);
-        l = MixStage(l, ProcessPhaser(l, phaser1_, biLfo),          phaserMixF_);
-        r = MixStage(r, ProcessPhaser(r, phaser2_, biLfo),          phaserMixF_);
+        if (doCh) {
+            l = MixStage(l, ProcessChorus(l, chorus1_),                 chorusMixF_);
+            r = MixStage(r, ProcessChorus(r, chorus2_),                 chorusMixF_);
+        }
+        if (doFl) {
+            l = MixStage(l, ProcessFlanger(l, flanger1_, bpFl1_, bpPhase_), flangerMixF_);
+            r = MixStage(r, ProcessFlanger(r, flanger2_, bpFl2_, p2),       flangerMixF_);
+        }
+        if (doPh) {
+            l = MixStage(l, ProcessPhaser(l, phaser1_, biLfo),          phaserMixF_);
+            r = MixStage(r, ProcessPhaser(r, phaser2_, biLfo),          phaserMixF_);
+        }
     }
 }
 
-// --- Internal LPG (daisy-nmr) -----------------------------------------------
-// Advance the shared envelope one sample. A pending trigger (from the Sync EXTI
-// ISR, or the menu switching the LPG on) restarts the attack from wherever the
-// envelope currently is -- retriggering mid-decay swells rather than clicking.
 void AudioPipeline::LpgUpdateEnvelope() {
     if (lpgTrigPending_) {
         lpgTrigPending_ = false;
@@ -546,11 +597,51 @@ void AudioPipeline::Process(BytebeatEngine& engine, float** out, size_t size) {
     // We still run its Lo-Fi + FX engines on the live signal so their state stays
     // warm and re-coupling is click-free -- we just don't route them to the output.
     const bool out2Drone = engine.GetOut2Decoupled();
+    // Capture interval in output samples, for CvOutput's rate-relative slew.
+    // Per block is plenty -- Rate moves at knob speed, not audio speed.
+    cvCaptureSamples_  = (float)cvHoldTicks_ * engine.GetSamplesPerTick();
+    cvCaptureSamples2_ = (float)cvHoldTicks_ * engine.GetSamplesPerTick2();
     for (size_t i = 0; i < size; i++) {
         float o1, o2;
         engine.Process(o1, o2);
         cleanBuffer_[i]  = o1;  // Out1 pre-lo-fi -> CV/BPM analysis
         cleanBuffer2_[i] = o2;  // Out2 pre-lo-fi -> CV DC-out mode (daisy-0pq)
+        // CV Out Hold capture, anchored to ABSOLUTE t (daisy-*).
+        //
+        // Fire when t == cvSampleOffset_ (mod window). The offset shifts WHICH
+        // PHASE of the window we land on; it is not a look-ahead. That matters
+        // for latency: an earlier version captured on the t == 0 phase and read
+        // f(t + offset) instead, which put the CV up to a whole window AHEAD of
+        // the audio -- 2 s at the slowest Rate. Sampling the phase directly
+        // reads exactly the same values with zero lead.
+        //
+        // Why an offset at all: most formulas are a product with t masked to 8
+        // bits, so the t == 0 phase zeroes the low bits -- at window >= 256 the
+        // capture is the constant 0, and 27% of (formula, A, B) combinations
+        // come out dead flat. An odd phase reaches all 256 values.
+        //
+        // The window is always a power of two, so the modulo is a mask, and
+        // anchoring to t (rather than a running counter) means the phase cannot
+        // drift and re-anchors correctly after a Sync reset. `phase < steps`
+        // detects the boundary being crossed anywhere within this sample's
+        // advance, which is what makes it correct when t jumps several steps at
+        // once at high Rate.
+        const uint32_t mask = (uint32_t)cvHoldTicks_ - 1u;   // window is 2^n
+        const uint32_t off  = (uint32_t)cvSampleOffset_;
+        const uint32_t st1  = engine.GetTStep();
+        const uint32_t st2  = engine.GetTStep2();
+        const bool cap1 = ((engine.GetT()  - off) & mask) < st1;
+        const bool cap2 = ((engine.GetT2() - off) & mask) < st2;
+        cvCaptureBuffer_[i]  = cap1;
+        cvCaptureBuffer2_[i] = cap2;
+        // The value Hold captures: the fresh un-interpolated formula value at
+        // the current t -- not o1/o2, which are still ramping toward it. No
+        // extra evaluation is needed now the offset is a capture phase rather
+        // than a look-ahead.
+        if (cap1) holdSample1_ = ((float)engine.GetRawSample()  / 127.5f) - 1.0f;
+        if (cap2) holdSample2_ = ((float)engine.GetRawSample2() / 127.5f) - 1.0f;
+        holdSampleBuffer_[i]  = holdSample1_;
+        holdSampleBuffer2_[i] = holdSample2_;
         float v1 = ProcessLofi(o1, lofi1_);
         float v2 = ProcessLofi(o2, lofi2_);
         ProcessFx(v1, v2);     // post-Lo-Fi FX insert (stereo pair)

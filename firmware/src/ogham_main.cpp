@@ -62,7 +62,7 @@ static BpmClock bpmClock;
 //     future build can read the previously-installed version (e.g. to migrate).
 //     BUMP THIS on every flashed release. ---
 static constexpr int      FW_VER_MAJOR = 1;
-static constexpr int      FW_VER_MINOR = 10;  // 0..99, shown as two digits (v1.10)
+static constexpr int      FW_VER_MINOR = 11;  // 0..99, shown as two digits (v1.11)
 static constexpr uint32_t FW_VERSION   = (uint32_t)FW_VER_MAJOR * 100u + FW_VER_MINOR; // 100 = v1.00
 
 // --- Persisted settings (QSPI). Bump SETTINGS_VERSION to invalidate old layouts. ---

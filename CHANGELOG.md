@@ -6,6 +6,26 @@ to the corresponding GitHub Release and their SHA-256 published.
 Full release notes, and the in-browser flasher, live at
 <https://keeos.io/firmware/ogham/>.
 
+## 1.11 — 2026-08-10
+
+The full bank: all 100 slots are now real formulas, grouped by character.
+
+- **The bank is complete and reorganised.** `F0`–`F99` are a hundred curated
+  formulas — twenty each of **textural** (`F0`–`F19`), **noise** (`F20`–`F39`),
+  **percussive** (`F40`–`F59`), **rhythmic** (`F60`–`F79`) and **melodic**
+  (`F80`–`F99`). The Viznut placeholder no longer plays on any numbered slot.
+- **Every slot number now means something different.** The previous 22-formula
+  bank is entirely replaced, so a saved patch (or a written-down slot number)
+  selects a different sound than it did on 1.10. Settings themselves are not
+  touched — the layout is unchanged, so updating does **not** reset them — but
+  the two saved formula indices will need re-choosing by ear.
+- The formulas are generated from the curated library rather than hand-written,
+  and each one is verified against the evaluator they were auditioned on before
+  it ships: 72 million samples per build, across nine A/B settings and four
+  windows of `t`, all matching sample for sample.
+- Manual: Appendix A rewritten as the hundred-formula bank, grouped by type,
+  listing each slot's number, name and expression.
+
 ## 1.10 — 2026-08-08
 
 Maintenance release: no new user-facing features, no settings-layout change

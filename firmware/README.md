@@ -74,10 +74,16 @@ powered by USB as well as the rack, so the case switch alone does not reset it.
 | `bpm_clock.*` | Tempo estimation for the EOC output |
 | `ogham_pins.h` | Pin assignments — the source of truth, matching the schematic |
 
-Formulas are compiled in. To add one: write the inline function in `formulas.h`,
-add its `FormulaInfo` entry in `formulas.cpp`, rebuild. All bitwise operations
-follow JavaScript `ToInt32` semantics (shift counts masked to `& 31`, output
-masked to `& 0xFF`) so formulas behave as they do in browser bytebeat tools.
+Formulas are compiled in. All bitwise operations follow JavaScript `ToInt32`
+semantics (shift counts masked to `& 31`, output masked to `& 0xFF`) so formulas
+behave as they do in browser bytebeat tools.
+
+`formulas.h` and `formulas.cpp` are **generated**, not hand-written — the bank is
+translated out of the curated library by `tools/gen_ogham_bank.cpp` in the
+bytebeat repository, which emits the manual's Appendix A from the same manifest
+and compares every generated function against the evaluator the formulas were
+auditioned on. Change the library and regenerate rather than editing these two
+files, or the module and the manual drift apart.
 
 Appendix A of the manual lists every formula's expression and what A and B change.
 

@@ -27,8 +27,17 @@ try:
     if len(w) != m.STRUCT_WORDS:
         print("read failed:", len(w), "words"); sys.exit(1)
     v = struct.unpack(m.STRUCT_FMT, b"".join(struct.pack("<I", x) for x in w))
-    potA, potB, potR, potL = v[12], v[13], v[14], v[15]
-    cA, cB, cvA, cvB = v[16], v[17], v[18], v[19]
+    # Indices follow struct Telemetry in ogham_main.cpp:
+    #   0 magic  1 counter  2 segs  3 modeState  4 ioState  5 out1  6 out2
+    #   7 paramA 8 paramB  9 rate  10 extClockRate
+    #   11 potA  12 potB   13 potRate  14 potLevel
+    #   15 combinedA  16 combinedB  17 cvA  18 cvB  19 cpuPeak ...
+    # These were one place out, so every value printed was the next field along
+    # and "cvB" was actually cpuPeak -- which is why it read as a five-digit
+    # number rather than a 0-1 ADC value. Calibrating against this would have
+    # used the wrong channel.
+    potA, potB, potR, potL = v[11], v[12], v[13], v[14]
+    cA, cB, cvA, cvB = v[15], v[16], v[17], v[18]
     print(f"  potA={potA:.4f}  cvA(adc4)={cvA:.4f}  combinedA={cA:.4f}")
     print(f"  potB={potB:.4f}  cvB(adc5)={cvB:.4f}  combinedB={cB:.4f}")
     print(f"  potRate={potR:.4f}  potLevel={potL:.4f}")

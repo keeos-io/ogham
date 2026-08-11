@@ -62,12 +62,20 @@ static void fft_inplace(float* data, int N) {
     }
 }
 
+static float MedianOf(const float* src, int n);
+
 void BpmClock::Init() {
     memset(audioBuffer_, 0, sizeof(audioBuffer_));
     audioWritePos_ = 0;
     frameWritePos_ = 0;
     decimCounter_ = 0;
     frameReady_ = false;
+
+    // Periodic Hann, built once. Periodic (divide by FFT_SIZE) rather than
+    // symmetric (FFT_SIZE - 1) because these frames overlap.
+    for (int i = 0; i < FFT_SIZE; i++) {
+        window_[i] = 0.5f * (1.0f - cosf(6.2831853f * (float)i / (float)FFT_SIZE));
+    }
 
     memset(curMag_, 0, sizeof(curMag_));
     memset(prevMag_, 0, sizeof(prevMag_));
@@ -80,9 +88,13 @@ void BpmClock::Init() {
     freshSamples_ = 0;
     lastRunSamples_ = 0;
 
+    bpmHistCount_ = 0;
+    lastPeak_ = 0.0f;
+
     baseBpm_ = 0.0f;
     bpm_ = 0.0f;
     locked_ = false;
+    confidence_ = 0.0f;
 
     period_ = 0;
     clockCounter_ = 0;
@@ -94,6 +106,9 @@ void BpmClock::RequestEstimate() {
     estimatePending_ = true;
     freshSamples_ = 0;
     lastRunSamples_ = 0;
+    bpmHistCount_ = 0;
+    lastPeak_ = 0.0f;
+    confidence_ = 0.0f;
 }
 
 void BpmClock::ProcessSample(float sample) {
@@ -146,16 +161,37 @@ void BpmClock::Update(float rate) {
             RunEstimate(rate);
         }
         if (fresh >= FLUX_BUF_SIZE && !locked_) {
+            // Out of data. Adopt the median of whatever was gathered rather
+            // than emitting no clock at all — the confidence value says how
+            // little this is worth. The old code locked on the first estimate,
+            // so it always produced a clock when any estimate succeeded; not
+            // regressing that matters more here than holding out for agreement.
+            if (!TryLock(1) && bpmHistCount_ > 0) {
+                baseBpm_ = MedianOf(bpmHist_, bpmHistCount_);
+                confidence_ = 0.0f;
+                locked_ = true;
+            }
+            if (locked_) {
+                ApplyBpm(rate);
+            }
             estimatePending_ = false;
         }
     }
 
     // Scale BPM and clock period to current rate
     if (baseBpm_ > 0.0f) {
-        bpm_ = baseBpm_ * rate;
-        float periodF = 48000.0f * 60.0f / bpm_;
-        period_ = (uint32_t)(periodF + 0.5f);
+        ApplyBpm(rate);
     }
+}
+
+void BpmClock::ApplyBpm(float rate) {
+    bpm_ = baseBpm_ * rate;
+    if (bpm_ <= 0.0f) {
+        period_ = 0;
+        return;
+    }
+    float periodF = 48000.0f * 60.0f / bpm_;
+    period_ = (uint32_t)(periodF + 0.5f);
 }
 
 void BpmClock::ProcessFrame() {
@@ -164,15 +200,14 @@ void BpmClock::ProcessFrame() {
     // Fill FFT buffer: windowed real samples as complex (imag = 0)
     for (int i = 0; i < FFT_SIZE; i++) {
         int idx = (wp - FFT_SIZE + i + AUDIO_BUF_SIZE) & (AUDIO_BUF_SIZE - 1);
-        float w = 0.5f * (1.0f - cosf(6.2831853f * (float)i / (float)(FFT_SIZE - 1)));
-        fftBuffer_[2 * i] = audioBuffer_[idx] * w;
+        fftBuffer_[2 * i] = audioBuffer_[idx] * window_[i];
         fftBuffer_[2 * i + 1] = 0.0f;
     }
 
-    // 256-point complex FFT in-place
+    // Complex FFT in-place
     fft_inplace(fftBuffer_, FFT_SIZE);
 
-    // Compute magnitude squared for bins 1-127
+    // Compute magnitude squared for bins 1..NUM_MAG_BINS
     for (int k = 0; k < NUM_MAG_BINS; k++) {
         int bin = k + 1;
         float re = fftBuffer_[2 * bin];
@@ -202,79 +237,152 @@ void BpmClock::ProcessFrame() {
     memcpy(prevMag_, curMag_, sizeof(curMag_));
 }
 
+// Insertion-sorted median of a short array. Copies, so the caller's order is
+// preserved.
+static float MedianOf(const float* src, int n) {
+    float t[8];
+    if (n > 8) n = 8;
+    for (int i = 0; i < n; i++) t[i] = src[i];
+    for (int i = 1; i < n; i++) {
+        float v = t[i];
+        int j = i - 1;
+        while (j >= 0 && t[j] > v) { t[j + 1] = t[j]; j--; }
+        t[j + 1] = v;
+    }
+    return (n & 1) ? t[n / 2] : 0.5f * (t[n / 2 - 1] + t[n / 2]);
+}
+
+void BpmClock::PushEstimate(float bpm, float peak) {
+    if (bpmHistCount_ < BPM_HIST) {
+        bpmHist_[bpmHistCount_++] = bpm;
+    } else {
+        for (int i = 1; i < BPM_HIST; i++) bpmHist_[i - 1] = bpmHist_[i];
+        bpmHist_[BPM_HIST - 1] = bpm;
+    }
+    lastPeak_ = peak;
+}
+
+// Adopt the median of the collected estimates if at least minAgree of them sit
+// within AGREE_TOL of it. Locking on the first successful estimate meant a
+// single bad one stuck permanently, because nothing ever revisited it.
+bool BpmClock::TryLock(int minAgree) {
+    if (bpmHistCount_ < minAgree || bpmHistCount_ < 1) return false;
+
+    float med = MedianOf(bpmHist_, bpmHistCount_);
+    if (med <= 0.0f) return false;
+
+    int agree = 0;
+    for (int i = 0; i < bpmHistCount_; i++) {
+        float d = bpmHist_[i] - med;
+        if (d < 0.0f) d = -d;
+        if (d <= AGREE_TOL * med) agree++;
+    }
+    if (agree < minAgree) return false;
+
+    float q = lastPeak_;
+    if (q < 0.0f) q = 0.0f;
+    if (q > 1.0f) q = 1.0f;
+
+    baseBpm_ = med;
+    confidence_ = q * ((float)agree / (float)bpmHistCount_);
+    locked_ = true;
+    return true;
+}
+
 void BpmClock::RunEstimate(float rate) {
     int bufLen = freshSamples_;
     if (bufLen > FLUX_BUF_SIZE) bufLen = FLUX_BUF_SIZE;
 
     int maxLag = bufLen / 2;
-    if (maxLag < MIN_LAG) return;
+    if (maxLag > MAX_LAGS) maxLag = MAX_LAGS;
+    if (maxLag < MIN_LAG + 2) return;
 
-    // Compute mean flux
-    float mean = 0.0f;
+    // Unwrap the ring into linear order once. Doing this here removes two
+    // hardware divides from every iteration of the correlation below.
     for (int i = 0; i < bufLen; i++) {
-        int idx = (fluxWritePos_ - bufLen + i + FLUX_BUF_SIZE) % FLUX_BUF_SIZE;
-        mean += fluxBuffer_[idx];
+        int idx = fluxWritePos_ - bufLen + i;
+        if (idx < 0) idx += FLUX_BUF_SIZE;
+        fluxLin_[i] = fluxBuffer_[idx];
     }
+
+    float mean = 0.0f;
+    for (int i = 0; i < bufLen; i++) mean += fluxLin_[i];
     mean /= (float)bufLen;
 
-    // Compute variance
+    // Remove the mean in place so the correlation is a plain dot product.
     float variance = 0.0f;
     for (int i = 0; i < bufLen; i++) {
-        int idx = (fluxWritePos_ - bufLen + i + FLUX_BUF_SIZE) % FLUX_BUF_SIZE;
-        float d = fluxBuffer_[idx] - mean;
-        variance += d * d;
+        fluxLin_[i] -= mean;
+        variance += fluxLin_[i] * fluxLin_[i];
     }
     variance /= (float)bufLen;
-
     if (variance < 1e-6f) return;
 
-    // Mean-subtracted normalized autocorrelation
-    int numLags = maxLag - MIN_LAG + 1;
-    // Reuse fftBuffer_ as scratch for correlation (512 floats, enough for 200 lags)
-    float* corr = fftBuffer_;
+    const int numLags = maxLag - MIN_LAG + 1;
+    float peak = 0.0f;
 
     for (int li = 0; li < numLags; li++) {
         int lag = MIN_LAG + li;
-        float sum = 0.0f;
         int count = bufLen - lag;
-        for (int i = 0; i < count; i++) {
-            int idx1 = (fluxWritePos_ - bufLen + i + FLUX_BUF_SIZE) % FLUX_BUF_SIZE;
-            int idx2 = (fluxWritePos_ - bufLen + i + lag + FLUX_BUF_SIZE) % FLUX_BUF_SIZE;
-            sum += (fluxBuffer_[idx1] - mean) * (fluxBuffer_[idx2] - mean);
-        }
-        corr[li] = sum / ((float)count * variance);
+        const float* a = fluxLin_;
+        const float* b = fluxLin_ + lag;
+        float sum = 0.0f;
+        for (int i = 0; i < count; i++) sum += a[i] * b[i];
+        float c = sum / ((float)count * variance);
+        corr_[li] = c;
+        if (c > peak) peak = c;
     }
 
-    // Find the first local maximum above confidence threshold
+    // Accept the first local maximum that is both above an absolute floor and a
+    // decent fraction of the strongest peak present, so the bar rises with how
+    // periodic the signal is instead of sitting at a fixed 0.2 where noise can
+    // clear it.
+    float threshold = PEAK_FRAC * peak;
+    if (threshold < PEAK_FLOOR) threshold = PEAK_FLOOR;
+
     int bestLag = 0;
+    float bestCorr = 0.0f;
     for (int li = 1; li < numLags - 1; li++) {
-        if (corr[li] > corr[li - 1] && corr[li] >= corr[li + 1]) {
-            if (corr[li] > 0.2f) {
-                bestLag = MIN_LAG + li;
-                break;
-            }
+        if (corr_[li] > corr_[li - 1] && corr_[li] >= corr_[li + 1] &&
+            corr_[li] > threshold) {
+            bestLag = MIN_LAG + li;
+            bestCorr = corr_[li];
+            break;
         }
     }
-
     if (bestLag == 0) return;
 
     // Convert lag to BPM, normalize to 1x rate
     float beatPeriodSec = (float)bestLag / 100.0f;
     float rawBpm = 60.0f / beatPeriodSec;
+    if (rate > 0.0f) rawBpm /= rate;
 
-    if (rate > 0.0f) {
-        baseBpm_ = rawBpm / rate;
-    } else {
-        baseBpm_ = rawBpm;
+    // Choose the metrical level nearest a typical tempo rather than folding
+    // blindly into the range, which accepted 41 and 199 BPM as readily as 120.
+    // Comparing max(r, 1/r) orders candidates the same way |log(r)| would, and
+    // costs no logarithm.
+    static const float kOctaves[5] = {0.25f, 0.5f, 1.0f, 2.0f, 4.0f};
+    float best = 0.0f;
+    float bestScore = 1e30f;
+    for (int i = 0; i < 5; i++) {
+        float c = rawBpm * kOctaves[i];
+        if (c < TEMPO_MIN || c > TEMPO_MAX) continue;
+        float r = c / TEMPO_CENTRE;
+        float s = (r > 1.0f) ? r : (1.0f / r);
+        if (s < bestScore) { bestScore = s; best = c; }
+    }
+    if (best <= 0.0f) {
+        // Nothing landed in range (very fast or very slow source): fall back to
+        // the plain fold so an estimate still exists.
+        best = rawBpm;
+        while (best > TEMPO_MAX) best *= 0.5f;
+        while (best < TEMPO_MIN) best *= 2.0f;
     }
 
-    // Fold into 40-200 BPM range by octave doubling/halving
-    while (baseBpm_ > 200.0f) baseBpm_ *= 0.5f;
-    while (baseBpm_ < 40.0f) baseBpm_ *= 2.0f;
+    PushEstimate(best, bestCorr);
 
-    locked_ = true;
-    estimatePending_ = false;
-    bpm_ = baseBpm_ * rate;
-    float periodF = 48000.0f * 60.0f / bpm_;
-    period_ = (uint32_t)(periodF + 0.5f);
+    if (TryLock(LOCK_AGREE)) {
+        estimatePending_ = false;
+        ApplyBpm(rate);
+    }
 }

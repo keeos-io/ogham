@@ -95,6 +95,15 @@ public:
     // sets timbre: how far t advances per cycle). 0 = disabled (Clock/normal mode).
     void SetPitchSync(float freqHz);
 
+    // Where `t` restarts from on a sync reset, instead of 0.
+    //
+    // Bytebeat formulas commonly open with a long constant run — a sweep or a
+    // riser does nothing for hundreds or thousands of ticks — so a sync window
+    // anchored at 0 can loop a stretch that never leaves silence. The offset
+    // chooses which part of the formula the window lands on.
+    void SetStartOffset(uint32_t t0) { startOffset_ = t0; }
+    uint32_t GetStartOffset() const { return startOffset_; }
+
     // Out2 decouple / drone (daisy-pcq). When enabled, Out2 FORKS off the master:
     // on the coupled->decoupled edge it snapshots the current phase, rate and A/B,
     // then free-runs on its own accumulator at the frozen rate with the frozen A/B
@@ -161,6 +170,7 @@ private:
     uint8_t prevB_ = 0, curB_ = 0;
 
     // Shared parameters (volatile: written by main loop, read by audio ISR)
+    volatile uint32_t startOffset_ = 0;  // t value a sync reset restarts from
     volatile int32_t paramA_ = 1;
     volatile int32_t paramB_ = 1;
     volatile int paramQuant_ = 0;  // 0/1 = off; else A/B interpolation grid step

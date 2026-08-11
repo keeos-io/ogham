@@ -180,11 +180,14 @@ void BytebeatEngine::Process(float& out1, float& out2) {
         if (pitchSyncPhase_ >= 1.0f) { pitchSyncPhase_ -= 1.0f; doReset = true; }
     }
     if (doReset) {
-        phase_ = 0;
-        t_ = 0;
-        curA_ = EvalInterp(f1, 0, paramA_, paramB_, paramQuant_);
+        // Restart at the configured offset rather than always at t = 0, so a
+        // synced window can be placed past a formula's dead opening.
+        const uint32_t t0 = startOffset_;
+        phase_ = (uint64_t)t0 << 32;
+        t_ = t0;
+        curA_ = EvalInterp(f1, t0, paramA_, paramB_, paramQuant_);
         prevA_ = curA_;
-        curB_ = EvalInterp(f2, 0u, paramA_, paramB_, paramQuant_);
+        curB_ = EvalInterp(f2, t0, paramA_, paramB_, paramQuant_);
         prevB_ = curB_;
     }
 

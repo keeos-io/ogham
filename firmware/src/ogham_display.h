@@ -53,6 +53,13 @@ public:
     void FlashParam(char prefix, int value);
     bool IsFlashing() const { return flashing_; }
 
+    // Drop an active value flash straight away, so another interaction takes
+    // the display now instead of queueing behind the timeout. The next display
+    // tick (~17 ms) redraws whatever that interaction wants. Worth having
+    // because the flash lingers for 2.5 s: without this, turning the encoder
+    // while an A/B value is up appears to do nothing until the flash expires.
+    void CancelFlash() { flashing_ = false; }
+
     // Flash a clock multiply/divide ratio (daisy-79d). `exp` is the power-of-two
     // exponent: >=0 multiply, <0 divide; magnitude shown = 2^|exp|. Multiply
     // shows just the number (e.g. "4", "32"); divide shows the number with the
@@ -82,7 +89,11 @@ private:
     int  pendingValue_ = 0;
     bool flashRaw_ = false;             // true: draw pendingSegs_ (ratio) not prefix+value
     uint8_t pendingSegs_[4] = {0,0,0,0};
-    static constexpr uint32_t FLASH_DURATION_MS = 1000;
+    // How long the A/B (and clock-ratio) value lingers after the last knob
+    // movement. One second was too brief to read while dialling a value in, and
+    // worst at the end of a slow adjustment: each step re-arms the flash, then
+    // it expires before the next step arrives.
+    static constexpr uint32_t FLASH_DURATION_MS = 2500;
 
     // Draw "[c0]-NN" with digit-0 decimal point if dpClean.
     void ShowLabeled(uint8_t c0seg, int twoDigit, bool dpClean);

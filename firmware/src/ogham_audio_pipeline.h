@@ -54,13 +54,20 @@ struct FxChainConfig {
     uint8_t cvSlewRise; // 0 = off (instant)
     uint8_t cvSlewFall; // same mapping, applied when the target is below the current output
     uint8_t cvHold;     // 0 = off (every tick); else a power-of-2 hold window, 2..256; DC modes only
+    // V/oct start offset, in units of 64 ticks (0..255 -> 0..16320 ticks): where
+    // a sync reset restarts `t`. Formulas routinely open with a long constant
+    // run -- the worst in the bank does nothing until t = 10001 -- so a window
+    // anchored at 0 can loop a stretch that never leaves silence. 64-tick units
+    // because a byte has to span those openings.
+    uint8_t voctOffset;
 };
 // FX menu fields, in menu order: [0] global on/off, [1] chain toggle,
 // [2..13] = 3 stages x 4 sub-params (level/type/p1/p2), [14] = CV-out mode,
 // [15] = CV Out slew rise, [16] = CV Out slew fall, [17] = CV Out hold, [18] =
 // LPG (consolidated on/off + decay), [19] = CV->Timbre routing, [20] =
-// param-interp grid (q), [21] = Out2 decouple/drone. Stage param = 2 + stage*4 + sub.
-static constexpr int FX_NUM_FIELDS   = 22;
+// param-interp grid (q), [21] = Out2 decouple/drone, [22] = V/oct start offset.
+// Stage param = 2 + stage*4 + sub.
+static constexpr int FX_NUM_FIELDS   = 23;
 static constexpr int FX_FIELD_GLOBAL = 0;   // the global on/off
 static constexpr int FX_FIELD_CHAIN  = 1;   // the serial/parallel toggle
 static constexpr int FX_FIELD_CVOUT  = 14;  // CV-out mode (env / DC Out1 / DC Out2)
@@ -71,6 +78,7 @@ static constexpr int FX_FIELD_LPG      = 18; // internal LPG, consolidated on/of
 static constexpr int FX_FIELD_TIMBRECV = 19; // CV->Timbre routing (normal / CV A / CV B)
 static constexpr int FX_FIELD_QUANT  = 20;  // the A/B param-interp grid (q)
 static constexpr int FX_FIELD_DRONE  = 21;  // Out2 decouple/drone toggle
+static constexpr int FX_FIELD_VOCTOFS = 22; // V/oct start offset (x64 ticks)
 static constexpr int FX_TYPE_MAX     = 1;   // 0 = clean, 1 = characterful variant
 
 // Audio pipeline: takes the two engine voices and applies the same lo-fi tone

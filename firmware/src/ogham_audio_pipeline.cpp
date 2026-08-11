@@ -85,18 +85,26 @@ namespace {
     constexpr int   BI_POLES      = 8;
 
     // --- Internal LPG (daisy-nmr) ---
-    // Decay is exponential in TIME, in TWO segments with the knee at field 50
-    // (daisy-ygh). A single exponential 2ms..10s put a sharp pluck at 50 and
-    // spent the whole upper half on times nobody reached for; the knee moves the
-    // old top (10s) down to 50 and gives the entire upper half to long decays.
-    // Short plucks deliberately get less parameter space as a result.
-    //   field  0..50 : 2 ms .. 10 s   (~18.4% per step -- coarser than before)
-    //   field 50..99 : 10 s .. 20 s   (~1.4% per step -- very fine up top)
+    // Decay is exponential in TIME, in TWO segments, with the knee at field 40
+    // and 500 ms.
+    //
+    // The knee was at field 50 / 10 s, which put too much of the control in the
+    // wrong places at both ends. Below 30 each step was a 18.6% jump and the
+    // whole bottom third went on sub-20 ms times that all just read as "click";
+    // above 50, forty-nine numbers shared a 2x range, which is a resolution
+    // nobody can hear and half the control doing nothing. Moving the knee down
+    // narrows what 0..30 has to cover, finds real resolution for the plucks and
+    // swells around it, and gives the upper half a range worth having:
+    //
+    //   field  0..30 : 2 ms .. 126 ms   63x (was 166x)   14.8%/step (was 18.6%)
+    //   field 30..50 : 126 ms .. 934 ms  7x (was  30x)   10.5%/step (was 18.6%)
+    //   field 50..99 : 934 ms .. 20 s   21x (was   2x)    6.5%/step (was  1.4%)
+    //
     // The ratio-per-step changes at the knee; that kink is the point, not a bug.
     constexpr float LPG_DECAY_MIN_S = 0.002f;   // field 0  = 2 ms (percussive tick)
-    constexpr float LPG_DECAY_MID_S = 10.0f;    // field 50 = 10 s (the old maximum)
+    constexpr float LPG_DECAY_MID_S = 0.5f;     // field 40 = 500 ms
     constexpr float LPG_DECAY_MAX_S = 20.0f;    // field 99 = 20 s (a long swell)
-    constexpr int   LPG_DECAY_KNEE  = 50;       // field where MID_S lands
+    constexpr int   LPG_DECAY_KNEE  = 40;       // field where MID_S lands
     constexpr int   LPG_DECAY_TOP   = 99;       // top of the field range
     // Decay SHAPE. A plain one-pole (asymptotic to zero) drops hard in the first
     // instant and then trails off quietly for ages -- the note loses presence
@@ -202,6 +210,7 @@ FxChainConfig AudioPipeline::DefaultFxChain() {
     c.cvSlewRise   = 0;  // CV Out slew off (instant; matches pre-daisy-* behaviour)
     c.cvSlewFall   = 0;  // CV Out slew off (instant; matches pre-daisy-* behaviour)
     c.cvHold       = 0;  // CV Out hold off (every tick; matches pre-daisy-* behaviour)
+    c.voctOffset   = 0;  // V/oct start offset off (sync restarts at t = 0)
     return c;
 }
 

@@ -69,11 +69,11 @@ static BpmClock bpmClock;
 //     future build can read the previously-installed version (e.g. to migrate).
 //     BUMP THIS on every flashed release. ---
 static constexpr int      FW_VER_MAJOR = 1;
-static constexpr int      FW_VER_MINOR = 13;  // 0..99, shown as two digits (v1.13)
+static constexpr int      FW_VER_MINOR = 14;  // 0..99, shown as two digits (v1.14)
 static constexpr uint32_t FW_VERSION   = (uint32_t)FW_VER_MAJOR * 100u + FW_VER_MINOR; // 100 = v1.00
 
 // --- Persisted settings (QSPI). Bump SETTINGS_VERSION to invalidate old layouts. ---
-static constexpr uint32_t SETTINGS_VERSION = 15; // v15: CV Out slew split into independent rise/fall
+static constexpr uint32_t SETTINGS_VERSION = 16; // v16: V/oct rate-tracking + start offset
 struct OghamSettings {
     uint32_t version;
     int out1Formula;
@@ -130,6 +130,12 @@ struct Telemetry {
     uint32_t cpuPeriod;    // audio block period (cycles)
     uint32_t syncCount;    // gate hard-sync (EXTI) events
     int32_t  fxType;       // selected post-Lo-Fi effect (FxType; 0 = Off)
+    // Appended after fxType so the monitor's existing 22-word read still
+    // matches. BPM estimator state (daisy-3q1).
+    float    bpm;          // detected tempo at the current rate
+    float    baseBpm;      // same, normalised to 1x rate (a formula constant)
+    float    bpmConfidence;// 0-1: peak height x proportion of estimates agreeing
+    uint32_t bpmLocked;    // 1 once an estimate has been adopted
 };
 volatile Telemetry g_telemetry;
 volatile uint32_t g_syncCount = 0;   // incremented by the gate EXTI ISR
@@ -260,8 +266,6 @@ static inline int ClockRatioExp(float centered) {
 
 // --- BPM change detection ---
 static int prevFormulaIdx = -1;
-static int32_t prevParamA = 0;
-static int32_t prevParamB = 0;
 
 // --- External clock detection (hardware-timed in the clock EXTI ISR) ---
 // volatile: written by the EXTI ISR, read by the main loop.
@@ -269,14 +273,20 @@ static volatile bool extClockActive = false;
 static volatile float extClockRate = 1.0f;
 static volatile uint32_t lastClockEdgeUs = 0;
 static volatile uint32_t lastClockPeriodUs = 0;  // last median clock period (ISR -> main loop)
-static constexpr uint32_t EXT_CLOCK_TIMEOUT_US = 2000000;  // 2 seconds (ISR per-edge gap)
+// A beat-rate clock is 0.5 s at 120 BPM and 2.5 s at 24 BPM, so the old 2 s
+// ceiling would have tripped on every beat below ~30 BPM. 10 s leaves room for
+// that and for anyone who patches a slower division than the assumed quarter
+// note -- nothing enforces the convention, and a half-note or bar clock should
+// still track rather than being read as a dropout. It stays clear of the
+// ~17.9 s GetUs() wrap, beyond which a period cannot be measured at all.
+static constexpr uint32_t EXT_CLOCK_TIMEOUT_US = 10000000;  // 10 seconds (ISR per-edge gap)
 // Adaptive revert-to-knob timeout: scale to the clock's own period so fast clocks
 // revert almost immediately when unplugged, while slow clocks keep a wide enough
 // window not to false-revert between their beats. (True instant detection would
 // need the jack's switch contact wired to a GPIO -- not on this board; see daisy-*.)
 static constexpr uint32_t EXT_CLOCK_TIMEOUT_PERIODS = 2;     // revert after ~2 missed beats
 static constexpr uint32_t EXT_CLOCK_TIMEOUT_MIN_MS  = 90;    // floor (ignore fast-clock jitter)
-static constexpr uint32_t EXT_CLOCK_TIMEOUT_MAX_MS  = 2000;  // ceiling (slow clocks)
+static constexpr uint32_t EXT_CLOCK_TIMEOUT_MAX_MS  = 10000; // ceiling (slow bar clocks)
 static uint32_t lastSeenEdgeUs = 0;   // main-loop mirror of lastClockEdgeUs (edge-change detect)
 static uint32_t lastEdgeSeenMs = 0;   // GetNow() ms when a new edge was last observed
 
@@ -295,7 +305,21 @@ static constexpr float RATE_HOLD_EXIT_EPS = 0.02f;  // ~5 LSB of 255: pot move t
 // The clock frequency maps ratiometrically to a playback-rate multiplier (then
 // * the Rate knob). Pitch is intentionally NOT handled here (a future dedicated
 // V/oct CV input owns pitch); Clock In is purely a tempo/clock source.
-static constexpr float TEMPO_UNITY_HZ     = 8.0f;     // clock Hz that maps to 1x rate
+//
+// Clock In is taken as ONE PULSE PER BEAT (quarter notes). At the 120 BPM
+// reference that is 2 Hz, which plays at 1x native speed; a faster clock plays
+// faster, proportionally.
+//
+// The beat is the subdivision most modular clocks actually carry, and it puts
+// the useful tempo range in the middle of the timing window rather than at
+// either end: a quarter note spans 0.3 s at 200 BPM to 2.5 s at 24 BPM. The
+// original convention anchored 8 Hz to 1x -- sixteenths at the same 120 BPM
+// reference, hence a factor of 4 between them. The reference tempo has never
+// changed, only the subdivision the input is assumed to carry.
+static constexpr float TEMPO_UNITY_BPM        = 120.0f;  // reference tempo
+static constexpr int   TEMPO_PULSES_PER_BEAT  = 1;       // one pulse per quarter
+static constexpr float TEMPO_UNITY_HZ
+    = TEMPO_UNITY_BPM * (float)TEMPO_PULSES_PER_BEAT / 60.0f;  // 2 Hz = 1x rate
 static constexpr float CLOCK_RATE_MAX     = 64.0f;    // clamp runaway at fast clocks
 static constexpr uint32_t MIN_CLOCK_PERIOD_US = 200;  // refractory: reject edges <200us apart
 
@@ -308,12 +332,27 @@ static constexpr float VOCT_FRAC_PER_OCT = 0.1948f; // ADC fraction per octave (
 // base 28154 reads 440.0 where 28160 is nominal, i.e. real pitch = nominal * 1.000213.
 // Divide requested pitches by this so they land on true frequencies.
 static constexpr float SR_CORRECTION     = 28160.0f / 28154.0f;    // ~1.000213
-static constexpr float VOCT_BASE_HZ      = 32.70f / SR_CORRECTION; // 0V + centered knob = true C1
-// In V/oct mode the Rate knob is repurposed as a BIPOLAR FINE-TUNE offset
-// (12 o'clock = 0, +-VOCT_KNOB_SPAN_OCT/2 octaves); the V/oct CV adds 1V/oct on
-// top. Base (C1) so 0-5V CV covers C1..C6. Trade-off: timbre is fixed.
-static constexpr float VOCT_KNOB_SPAN_OCT     = 2.0f;  // full knob span (+-1 oct = +-1V fine tune)
-static constexpr float VOCT_FIXED_TIMBRE_RATE = 1.0f;  // fixed t-advance (timbre) in V/oct
+static constexpr float VOCT_BASE_HZ      = 32.70f / SR_CORRECTION; // reference C1
+// In V/oct mode the Rate knob is a bipolar FINE TUNE (12 o'clock = 0,
+// +-VOCT_KNOB_SPAN_OCT/2 octaves = +-12 semitones); the V/oct CV adds 1V/oct on
+// top. Continuous, so the module can be tuned to another oscillator by ear.
+static constexpr float VOCT_KNOB_SPAN_OCT = 2.0f;   // full knob span = +-1 octave
+//
+// V/oct is rate-tracking, so "tuning" is a single global rate factor.
+//
+// Every formula in the bank with a stable fundamental has a power-of-two period
+// -- bytebeat periodicity comes from bit operations on t -- so the whole melodic
+// set sits one fixed offset from concert pitch and differs only by octaves. The
+// slowest is 8000/256 = 31.25 Hz against C1 at 32.69 Hz, i.e. +0.78 semitones.
+// Correcting that one factor tunes the entire set; the Rate knob places the
+// octave. (Measured by tools/voct_tone.cpp.)
+static constexpr float VOCT_NATURAL_HZ  = 8000.0f / 256.0f;    // 31.25 Hz
+static constexpr float VOCT_RATE_TUNE   = VOCT_BASE_HZ / VOCT_NATURAL_HZ;
+// Floor for the computed rate. The engine's own range bottoms out at 1/64, and
+// below that the formula crawls rather than plays.
+static constexpr float VOCT_RATE_MIN    = 1.0f / 64.0f;
+// Start offset resolution: the menu field counts 64-tick steps.
+static constexpr uint32_t VOCT_OFFSET_STEP = 64;
 
 // Median-3 period filter: rejects a single spurious/missed edge.
 static uint32_t clkP0 = 0, clkP1 = 0, clkP2 = 0;
@@ -605,9 +644,17 @@ int main(void) {
         g_fx = s.fx;
         pipeline.SetFxChain(g_fx);
         engine.SetParamQuant(g_fx.paramQuant);  // engine-side; not via the pipeline
+        engine.SetStartOffset((uint32_t)g_fx.voctOffset * VOCT_OFFSET_STEP);
         // Restore a decoupled Out2 drone from its persisted frozen state (exact rate
         // + A/B), rather than letting the per-loop toggle re-snapshot live boot state
         // (which shifted the drone's pitch/sound across power cycles).
+        //
+        // This is the one deliberate exception to booting in step with the panel:
+        // everything else here follows the knobs and the Mode switch (the pot
+        // smoothers are primed and A/B seeded from them just below), but a frozen
+        // drone is captured *state*, not a control position, and honouring the
+        // panel instead would mean a saved drone patch could not survive a power
+        // cycle. Confirmed as intended 2026-08-11 — do not "fix" it.
         if (g_fx.out2Drone) {
             engine.RestoreOut2Drone(s.droneInc, s.droneA, s.droneB);
         }
@@ -683,6 +730,10 @@ int main(void) {
             if (pressed && !encWasPressed) {            // press start
                 encPressStart = nowMs;
                 encLongFired = false;
+                // Touching the encoder hands the display over at once — an A/B
+                // value flash should not sit in front of the gesture that
+                // follows it.
+                display.CancelFlash();
             }
             if (pressed && !encLongFired &&
                 (nowMs - encPressStart >= LONG_PRESS_MS)) {
@@ -718,6 +769,7 @@ int main(void) {
             // Encoder turn (acceleration scales the step by how fast you turn).
             int enc = controls.GetEncoderIncrement();
             if (enc != 0) {
+                display.CancelFlash();   // the turn owns the display from here
                 uint32_t dt = nowMs - lastEncMs;
                 lastEncMs = nowMs;
                 int step = 1;
@@ -792,6 +844,16 @@ int main(void) {
                         if (nv < 0) nv = 0;
                         if (nv > 99) nv = 99;
                         g_fx.cvSlewFall = (uint8_t)nv;
+                    } else if (fxField == FX_FIELD_VOCTOFS) {
+                        // V/oct start offset, 0..255 in 64-tick steps (0..16320).
+                        // Accelerated like a param, because the useful openings
+                        // run to thousands of ticks and stepping there one
+                        // detent at a time would be tedious.
+                        int nv = (int)g_fx.voctOffset + delta;
+                        if (nv < 0) nv = 0;
+                        if (nv > 255) nv = 255;
+                        g_fx.voctOffset = (uint8_t)nv;
+                        engine.SetStartOffset((uint32_t)g_fx.voctOffset * VOCT_OFFSET_STEP);
                     } else if (fxField == FX_FIELD_CVHOLD) {
                         // CV Out hold: 0 = off (every tick) .. 8 = every 256 ticks,
                         // power-of-2 steps -- one detent per step, not accelerated
@@ -843,21 +905,50 @@ int main(void) {
             // Raw-pot (knob) movement detection: the param flash is triggered by
             // the user TWISTING a knob, not by CV changing the value. GetPot()
             // reads ADC0/1 (pot alone), separate from GetCombinedA/B (pot+CV).
-            static constexpr float KNOB_MOVE_EPS = 0.006f; // ~1.5 LSB of 255
-            static float lastRawA = -1.0f, lastRawB = -1.0f;
+            // Movement is tracked as a *step* on the same 0-255 grid as the
+            // parameter, with the same sub-LSB hysteresis below.
+            //
+            // This used to be a flat 0.006 epsilon on the raw pot — about 1.5
+            // LSB — which was adequate while the parameter itself could only
+            // move in twos. Now that it moves in ones, a single-step nudge falls
+            // under that epsilon and never re-arms the flash, so a slow
+            // adjustment showed nothing between steps. Triggering on a step
+            // fixes that, and jitter below the hysteresis band still cannot hold
+            // the display on. Still read from the raw pot, so CV alone never
+            // re-arms the flash.
+            static int32_t lastKnobStepA = -1, lastKnobStepB = -1;
 
-            int32_t a = (int32_t)(paramASrc * 255.0f + 0.5f);
+            // How far past the committed value the continuous position must
+            // travel before a new value is latched, in LSB of the 0-255 range.
+            // Must stay under 1.0 or integers become unreachable; 0.75 gives a
+            // 0.5 LSB band of immunity to dither while keeping every step.
+            static constexpr float PARAM_COMMIT_LSB = 0.75f;
+
+            const float scaledA = paramASrc * 255.0f;
+            int32_t a = (int32_t)(scaledA + 0.5f);
             if (a < 0) a = 0;
             if (a > 255) a = 255;
             // Params still track the pots in FX mode, but suppress the flash so it
             // doesn't clobber the FX menu (ADC jitter would otherwise hijack it).
             bool flashOk = (System::GetNow() - bootMs) > PARAM_FLASH_GRACE_MS
                         && funcMode != FUNC_FX;
-            // 1-LSB deadband rejects ADC jitter, but always let the exact
-            // endpoints (0/255) latch so the full range is reachable.
+            // Sub-LSB hysteresis on the CONTINUOUS position, not a deadband on
+            // the rounded value.
+            //
+            // The old test was `|a - curA| > 1` against the committed value, so
+            // from N only N±2 could ever be accepted: every odd value was
+            // unreachable and the control moved in twos. Comparing the unrounded
+            // position instead, with a band under half an LSB, keeps every
+            // integer reachable while still rejecting dither — to flip back the
+            // input has to recross a 0.5 LSB gap, far more than the residual on
+            // a path already smoothed at SMOOTH_COEFF_CV.
+            //
+            // The endpoint latch stays: the ADC may not quite reach the rails,
+            // so 0 and 255 are forced through to keep the full range available.
             int32_t curA = engine.GetParamA();
+            float   dA   = scaledA - (float)curA;
             bool endA = (a != curA) && (a == 0 || a == 255);
-            if (a - curA > 1 || curA - a > 1 || endA) {
+            if (dA > PARAM_COMMIT_LSB || dA < -PARAM_COMMIT_LSB || endA) {
                 engine.SetParamA(a);
                 // Keep an active flash's value live (incl. CV) but DON'T restart
                 // its timeout — so CV alone can't hold the display on.
@@ -865,25 +956,37 @@ int main(void) {
             }
             // (Re)start the flash only on physical knob movement; show the
             // combined (pot+CV) value once triggered.
-            float rawA = controls.GetPot(0);
-            if (rawA - lastRawA > KNOB_MOVE_EPS || lastRawA - rawA > KNOB_MOVE_EPS) {
-                lastRawA = rawA;
-                if (flashOk) display.FlashParam('A', a);
+            const float rawScaledA = controls.GetPot(0) * 255.0f;
+            if (lastKnobStepA < 0) {
+                lastKnobStepA = (int32_t)(rawScaledA + 0.5f);  // seed, no flash
+            } else {
+                const float dRawA = rawScaledA - (float)lastKnobStepA;
+                if (dRawA > PARAM_COMMIT_LSB || dRawA < -PARAM_COMMIT_LSB) {
+                    lastKnobStepA = (int32_t)(rawScaledA + 0.5f);
+                    if (flashOk) display.FlashParam('A', a);
+                }
             }
 
-            int32_t b = (int32_t)(paramBSrc * 255.0f + 0.5f);
+            const float scaledB = paramBSrc * 255.0f;
+            int32_t b = (int32_t)(scaledB + 0.5f);
             if (b < 0) b = 0;
             if (b > 255) b = 255;
             int32_t curB = engine.GetParamB();
+            float   dB   = scaledB - (float)curB;
             bool endB = (b != curB) && (b == 0 || b == 255);
-            if (b - curB > 1 || curB - b > 1 || endB) {
+            if (dB > PARAM_COMMIT_LSB || dB < -PARAM_COMMIT_LSB || endB) {
                 engine.SetParamB(b);
                 if (flashOk) display.UpdateFlashValue('b', b);
             }
-            float rawB = controls.GetPot(1);
-            if (rawB - lastRawB > KNOB_MOVE_EPS || lastRawB - rawB > KNOB_MOVE_EPS) {
-                lastRawB = rawB;
-                if (flashOk) display.FlashParam('b', b);
+            const float rawScaledB = controls.GetPot(1) * 255.0f;
+            if (lastKnobStepB < 0) {
+                lastKnobStepB = (int32_t)(rawScaledB + 0.5f);  // seed, no flash
+            } else {
+                const float dRawB = rawScaledB - (float)lastKnobStepB;
+                if (dRawB > PARAM_COMMIT_LSB || dRawB < -PARAM_COMMIT_LSB) {
+                    lastKnobStepB = (int32_t)(rawScaledB + 0.5f);
+                    if (flashOk) display.FlashParam('b', b);
+                }
             }
         }
 
@@ -935,14 +1038,34 @@ int main(void) {
             engine.SetPitchSync(0.0f);
             engine.SetRate(1.0f);
         } else if (controls.IsVoctMode()) {
-            // V/oct: hard-sync pitch. Rate knob = bipolar fine tune (12 o'clock = 0,
-            // +-VOCT_KNOB_SPAN_OCT/2 oct); the V/oct CV adds 1V/oct on top. Timbre is
-            // fixed (knob is repurposed to pitch here). Clock ignored.
+            // V/oct drives the PLAYBACK RATE; there is no pitch hard-sync.
+            //
+            // A component of period P ticks played at R ticks/s sounds at R/P Hz,
+            // so an exponential R tracks 1V/oct exactly — and every partial
+            // scales with it, so this is varispeed transposition with the
+            // waveform shape preserved. The formula runs out normally, which is
+            // what the old hard-sync could not do: restarting t every cycle
+            // confined it to t = 0..baseSR/f, and a third of the bank does
+            // nothing in that window (see tools/voct_range.cpp).
+            //
+            // Formulas with a stable periodicity therefore play melodically;
+            // the rest become an exponential speed control, which is still
+            // useful. Pitch and evolution rate are no longer independent — a low
+            // note evolves slowly — and Sync In is the answer to that: driven
+            // from an oscillator on the same CV, the window R/F_sync is constant
+            // across pitch, so the timbre holds still while the pitch tracks.
+            //
+            // Rate knob = bipolar FINE TUNE, +-12 semitones, 12 o'clock = 0.
+            // Continuous rather than quantized, so Ogham can be tuned against
+            // another oscillator by ear.
             float cvOct   = (controls.GetVoct() - VOCT_ZERO_FRAC) / VOCT_FRAC_PER_OCT;
             float knobOct = (rateKnob - 0.5f) * VOCT_KNOB_SPAN_OCT;
-            float fpitch  = VOCT_BASE_HZ * powf(2.0f, cvOct + knobOct);
-            engine.SetPitchSync(fpitch);
-            engine.SetRate(VOCT_FIXED_TIMBRE_RATE);
+            float rate    = VOCT_RATE_TUNE * powf(2.0f, cvOct + knobOct);
+            if (rate > CLOCK_RATE_MAX) rate = CLOCK_RATE_MAX;
+            if (rate < VOCT_RATE_MIN)  rate = VOCT_RATE_MIN;
+            engine.SetPitchSync(0.0f);
+            engine.SetRate(rate);
+            lastClockRatioExp = 999;   // so returning to a clock re-flashes x1
         } else {
             // Clock In sets the playback rate. With a clock present (or held after
             // a cable-pull) the Rate/Fine pot is a QUANTIZED multiply/divide of the
@@ -1033,14 +1156,20 @@ int main(void) {
         // --- BPM: re-estimate when formula or A/B changes ---
         {
             int idx = engine.GetFormula1Index();
-            int32_t a = engine.GetParamA();
-            int32_t b = engine.GetParamB();
-            if (idx != prevFormulaIdx ||
-                (a - prevParamA) > 3 || (prevParamA - a) > 3 ||
-                (b - prevParamB) > 3 || (prevParamB - b) > 3) {
+            // Re-estimate on a formula change only.
+            //
+            // A and B used to retrigger too, on a change of more than 3, but
+            // they are continuous timbre controls: a knob sweep or any CV on
+            // their inputs resets the estimator faster than it can lock (it
+            // needs ~3 s, and a 2 count/s drift crosses a threshold of 3 every
+            // ~2 s), so it never settles. The formula is the discrete event that
+            // genuinely replaces the pattern.
+            //
+            // EOC does not go quiet in the meantime: Update() keeps applying the
+            // last baseBpm_ regardless of the lock, so the output holds the
+            // previous estimate until a new one is adopted.
+            if (idx != prevFormulaIdx) {
                 prevFormulaIdx = idx;
-                prevParamA = a;
-                prevParamB = b;
                 bpmClock.RequestEstimate();
             }
         }
@@ -1073,6 +1202,7 @@ int main(void) {
                 else if (fxField == FX_FIELD_CVSLEWRISE) val = g_fx.cvSlewRise;
                 else if (fxField == FX_FIELD_CVSLEWFALL) val = g_fx.cvSlewFall;
                 else if (fxField == FX_FIELD_CVHOLD)   val = (g_fx.cvHold == 0) ? 0 : (1 << g_fx.cvHold);
+                else if (fxField == FX_FIELD_VOCTOFS)  val = g_fx.voctOffset;
                 else if (fxField != FX_FIELD_CHAIN)  val = *FxFieldPtr(g_fx, fxField);
                 // Edit mode: flash the value at ~80% duty (~600ms period) so it's
                 // clear you're editing vs navigating.
@@ -1131,6 +1261,9 @@ int main(void) {
             g_telemetry.modeState = (uint32_t)funcMode
                                   | ((uint32_t)selOut << 8)
                                   | ((uint32_t)(pipeline.IsLofiClean() ? 1 : 0) << 16)
+                                  // bit 17: V/oct mode, so the rate mapping can be
+                                  // told apart from free-run when reading over SWD
+                                  | ((uint32_t)(controls.IsVoctMode() ? 1 : 0) << 17)
                                   | ((uint32_t)(extClockActive ? 1 : 0) << 24)
                                   | ((uint32_t)(clockHeld ? 1 : 0) << 25)
                                   | ((uint32_t)(encTimerRunning ? 1 : 0) << 26);
@@ -1157,6 +1290,10 @@ int main(void) {
             g_telemetry.fxType    = fxField
                                   | ((int)(g_fx.parallel != 0) << 8)
                                   | ((int)fxEditing << 16);
+            g_telemetry.bpm           = bpmClock.GetBpm();
+            g_telemetry.baseBpm       = bpmClock.GetBaseBpm();
+            g_telemetry.bpmConfidence = bpmClock.GetConfidence();
+            g_telemetry.bpmLocked     = bpmClock.IsLocked() ? 1u : 0u;
         }
     }
 }

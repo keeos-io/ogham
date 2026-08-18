@@ -14,7 +14,7 @@ The short version, once the tools are installed:
 
 ```bash
 git clone --recurse-submodules https://github.com/keeos-io/ogham.git
-cd keeos-ogham
+cd ogham
 make -C lib/libDaisy -j8 && make -C lib/DaisySP -j8
 cd firmware && make -j8            # -> build/ogham_bytebeat.{elf,bin,hex}
 ```

@@ -178,7 +178,7 @@ Identical on all three platforms once the tools are in place.
 
 ```bash
 git clone --recurse-submodules https://github.com/keeos-io/ogham.git
-cd keeos-ogham
+cd ogham
 make -C lib/libDaisy -j8      # a few minutes the first time
 make -C lib/DaisySP  -j8
 cd firmware && make -j8
@@ -194,6 +194,20 @@ cause. If you already cloned without it:
 ```bash
 git submodule update --init --recursive
 ```
+
+**On Windows, turn on long paths before cloning.** Some CMSIS test-suite paths
+inside libDaisy are longer than the old 260-character limit, so the recursive
+clone stops with `Filename too long` and `Unable to checkout ... in submodule
+path 'lib/libDaisy/Drivers/CMSIS_5'`:
+
+```bash
+git config --global core.longpaths true
+```
+
+Then clone again, or repair an existing clone with the `git submodule update`
+line above. The files that fail to arrive are CMSIS unit tests, and a build on
+top of the incomplete checkout still produced byte-identical firmware here — but
+git reports the clone as failed, which is not a state worth building on.
 
 ### Two encoder builds
 

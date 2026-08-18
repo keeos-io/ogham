@@ -117,9 +117,13 @@ system font and cannot be redistributed. See
 [`../THIRD-PARTY.md`](../THIRD-PARTY.md) for the full list and what to do on
 macOS or Linux.
 
-## Known issues in this revision
+## Known issues and planned changes
 
-Carried here so you can fix them in a fork rather than rediscover them:
+Carried here so you can fix them in a fork rather than rediscover them, and so
+you can see what is likely to move in the next revision before you commit to a
+fab run.
+
+### Electrical
 
 - **Audio output runs ~2× hot.** The TL072 stage is designed at 4.7×, giving
   ~19.5 Vpp full-scale against the ~10 Vpp Eurorack norm. The firmware
@@ -132,8 +136,49 @@ Carried here so you can fix them in a fork rather than rediscover them:
 - **Jacks have no switch/normalling contacts wired to GPIO**, so the firmware
   cannot detect a cable being unplugged — it can only infer it from signals
   stopping.
-- **The panel legend reads "ENV OUT"** where "CV OUT" would describe the jack
-  better, since it can output a raw bytebeat as DC as well as an envelope.
+
+### Mechanical
+
+- **The mounting holes are slightly out of position.** The module still fits most
+  cases, but it is more of a stretch than it should be. They move in a panel
+  update.
+- **The bottom row of jacks needs to rise by about 1 mm.** The current clearance
+  is enough in some cases and not in others, which was discovered the hard way
+  rather than by measurement. Fixed in the next revision.
+- **The pot and jack holes in the panel are piecewise curves**, not drill holes —
+  an artefact of how the artwork was converted. They will become real drill holes
+  in the PCB, which is both more precise and easier to fab.
+- **The seven-segment display sits poorly behind the panel.** It works, but it is
+  not a finished-looking job. The plan for v1.1 is a transparent acrylic window,
+  which also protects the display. The display itself is an Amazon-sourced part
+  and is likely to be replaced eventually — suitable alternatives are
+  surprisingly hard to find, so it stays for now.
+
+### Parts and sourcing
+
+- **C5 is a through-hole tantalum** for stock reasons, not design ones: a supply
+  was bought before a good SMD equivalent that JLCPCB could place turned up. It
+  is one of the hand-soldered parts as a result, and is likely to become SMD.
+- **Two encoder batches, two firmware builds.** Two parts with opposite A/B phase
+  have been prototyped and neither has been settled on, which is why the firmware
+  ships in default and original-encoder variants. Standardising on one part in
+  the next revision removes the variant build.
+- **The recent prototypes were built with centre-detent pots**, which was a
+  mistake in ordering rather than a design choice. A production run without them
+  may need the pot calibration re-tuned;
+  [`firmware/tools/cv_range.py`](../firmware/tools/cv_range.py) is the utility
+  for that.
+
+### Panel artwork and labelling
+
+- **The main label font is Bahnschrift**, a Microsoft system font that cannot be
+  redistributed and is not available on macOS or Linux. It is being replaced with
+  a freely licensed face. The fabrication files are unaffected — they carry the
+  artwork as polygons - but editing the SVG needs it today. See
+  [`../THIRD-PARTY.md`](../THIRD-PARTY.md).
+- **The panel legend reads "ENV OUT"** where "CV OUT" describes the jack better:
+  it outputs a raw bytebeat as DC as well as an envelope follower. It is being
+  renamed to CV OUT.
 
 ## Design notes
 

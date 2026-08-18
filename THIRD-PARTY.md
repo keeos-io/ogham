@@ -74,10 +74,3 @@ numbers are specific to JLCPCB's supplier and would need mapping.
 The formulas in `firmware/src/formulas.h` were discovered by machine search
 (a purpose-built GPU search with a neural fitness model) and are original to this
 project, not taken from published bytebeat collections.
-
-One exception: the fallback for an out-of-range slot is the classic
-`t*(((t>>12)|(t>>8))&(63&(t>>4)))`, attributed to **Viznut** (Ville-Matias
-Heikkilä), who originated bytebeat in 2011. It is included as a well-known
-reference tone. Since 1.11 all hundred numbered slots are filled, so it is no
-longer reachable from the panel. See
-<http://viznut.fi/texts-en/bytebeat_algorithmic_music.html>.

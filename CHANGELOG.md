@@ -6,6 +6,18 @@ to the corresponding GitHub Release and their SHA-256 published.
 Full release notes, and the in-browser flasher, live at
 <https://keeos.io/firmware/ogham/>.
 
+## 1.16 — 2026-08-18
+
+Housekeeping ahead of the sources being published: the unreachable placeholder
+formula is gone.
+
+- **The out-of-range fallback is removed.** Every numbered slot has held a real
+  formula since 1.11, and both voices clamp their index before the lookup, so
+  the placeholder could not be reached from the panel or by any tool. An
+  out-of-range index now returns slot 0. Nothing sounds different; 48 bytes of
+  flash recovered, leaving the build at 127,712 B (97.44%).
+- Settings are untouched — the stored layout is unchanged.
+
 ## 1.15 — 2026-08-18
 
 The A and B knobs get their top fifth back, one-shot formulas fire when you
@@ -90,7 +102,7 @@ The full bank: all 100 slots are now real formulas, grouped by character.
 - **The bank is complete and reorganised.** `F0`–`F99` are a hundred curated
   formulas — twenty each of **textural** (`F0`–`F19`), **noise** (`F20`–`F39`),
   **percussive** (`F40`–`F59`), **rhythmic** (`F60`–`F79`) and **melodic**
-  (`F80`–`F99`). The Viznut placeholder no longer plays on any numbered slot.
+  (`F80`–`F99`). The placeholder no longer plays on any numbered slot.
 - **Every slot number now means something different.** The previous 22-formula
   bank is entirely replaced, so a saved patch (or a written-down slot number)
   selects a different sound than it did on 1.10. Settings themselves are not

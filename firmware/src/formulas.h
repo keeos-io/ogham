@@ -766,12 +766,6 @@ static inline uint8_t formula_oldskool_tune(uint32_t t, int32_t a, int32_t b) {
 
 // --- not part of the numbered bank ---
 
-// The classic Viznut bytebeat, still the fallback for an out-of-range slot.
-static inline uint8_t formula_viznut(uint32_t t, int32_t /*a*/, int32_t /*b*/) {
-    int32_t i = (int32_t)t;
-    return (uint8_t)(i * ((shr(i, 12) | shr(i, 8)) & (63 & shr(i, 4)))) & 0xFF;
-}
-
 // A440 tuning reference (daisy-vu3). Triangle wave; ignores A/B. Clocked at
 // its base rate (28160 Hz) at 1x, one cycle = 64 t-samples -> 28160/64 = 440.0 Hz
 // exactly. The engine forces rate=1x while this is Out1's formula, so the pitch is
@@ -783,8 +777,7 @@ static inline uint8_t formula_ref_a440(uint32_t t, int32_t /*a*/, int32_t /*b*/)
 
 // Formula access. There are 100 numbered slots (0..99) plus a special A440
 // reference slot (index 100, displayed "AA"); GetFormulaCount() = 101. All
-// hundred numbered slots are filled; an out-of-range index falls back to the
-// Viznut placeholder.
+// hundred numbered slots are filled; an out-of-range index returns slot 0.
 const FormulaInfo* GetFormulaAt(int index);  // safe for 0..GetFormulaCount()-1
 int GetFormulaCount();
 int GetReferenceIndex();          // index of the A440 reference (the "AA" slot)

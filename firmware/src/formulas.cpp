@@ -639,10 +639,6 @@ static const int NUM_REAL = sizeof(formulaTable) / sizeof(formulaTable[0]);
 // 100 numbered slots (0..99), all of them filled.
 static constexpr int NUM_NUMBERED = 100;
 
-// Fallback for an out-of-range slot (classic Viznut).
-static const FormulaInfo kViznutSlot = {
-    "viznut", "viznut", formula_viznut, 8000,
-};
 // Special A440 tuning reference -- the "AA" slot (index 100, past the numbers).
 static const FormulaInfo kRefA440Slot = {
     "ref A440", "keeos", formula_ref_a440,
@@ -657,5 +653,5 @@ int GetNumberedSlotCount() { return NUM_NUMBERED; }
 const FormulaInfo* GetFormulaAt(int index) {
     if (index == NUM_NUMBERED) return &kRefA440Slot;          // "AA" reference
     if (index >= 0 && index < NUM_REAL) return &formulaTable[index];
-    return &kViznutSlot;                                      // out of range
+    return &formulaTable[0];                                  // out of range
 }

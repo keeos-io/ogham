@@ -9,7 +9,7 @@
 //
 // This file is part of the Ogham firmware. See LICENSE-firmware.txt at the
 // repository root for the full licence text.
-// https://github.com/stevec64/keeos-ogham
+// https://github.com/keeos-io/ogham
 // -----------------------------------------------------------------------------
 
 #include "ogham_controls.h"
@@ -120,6 +120,28 @@ void Controls::SampleEncoder() {
     }
 }
 
+// Pot + CV, summed in software. See the comment at the call site for why the
+// analog sum alone will not do.
+//
+//   pot  -> 0..1 across the pot's own full ADC travel
+//   cv   -> (what the sum SHOULD read for this pot) - (what it does read),
+//           in the same units the old all-analog path used, so a given voltage
+//           still moves the parameter by the same amount as before
+float Controls::CombineParam(float pot, float sumAdc, float offset, float gain) {
+    float v = pot / POT_FULL_SCALE;
+    if (v > 1.0f) v = 1.0f;
+
+    // Clamped at 0: past the rail the expected reading is negative, and
+    // subtracting a negative from a railed 0 would invent a CV that is not there.
+    float expected = offset - gain * pot;
+    if (expected < 0.0f) expected = 0.0f;
+    v += (expected - sumAdc) / offset;
+
+    if (v < 0.0f) v = 0.0f;
+    if (v > 1.0f) v = 1.0f;
+    return v;
+}
+
 void Controls::Process() {
     if (!seed_ || !encoder_) return;
 
@@ -152,19 +174,24 @@ void Controls::Process() {
         modeDebounce_ = 0;
     }
 
-    // Invert and normalize MCP6004 output to 0-1 parameter range.
-    // At 0V CV + 0V pot (pot CCW): ADC = CV_ZERO_OFFSET_x → combined = 0.0
-    // At 0V CV + full pot (pot CW): ADC ≈ 0.0 → combined = 1.0
-    // Per-channel offsets measured on this board (monitor, 2026-06-25).
-    float valA = (CV_ZERO_OFFSET_A - cvSmoothed_[0]) / CV_ZERO_OFFSET_A;
-    if (valA < 0.0f) valA = 0.0f;
-    if (valA > 1.0f) valA = 1.0f;
-    combinedA_ = valA;
-
-    float valB = (CV_ZERO_OFFSET_B - cvSmoothed_[1]) / CV_ZERO_OFFSET_B;
-    if (valB < 0.0f) valB = 0.0f;
-    if (valB > 1.0f) valB = 1.0f;
-    combinedB_ = valB;
+    // Pot and CV are summed in SOFTWARE, not taken from the analog sum.
+    //
+    // ADC4/5 carry the MCP6004 sum, and its gain is ~27% steeper than the pots'
+    // range: with no CV patched the output reaches the 0 V rail at 79% of
+    // rotation, so the last fifth of both A and B did nothing. Reading the sum
+    // alone cannot recover that -- past the rail the output is 0 whatever the pot
+    // does, and the information is gone.
+    //
+    // So the pot is taken from its OWN ADC (0/1), which sweeps cleanly across the
+    // full rotation, and CV is recovered as the sum's departure from what the pot
+    // alone would produce. Where the amp is railed that departure is unmeasurable,
+    // which only costs a small negative CV at a high pot setting -- a region where
+    // the parameter is already at or near maximum. A negative CV large enough to
+    // bring the output back off the rail still reads correctly.
+    combinedA_ = CombineParam(potValues_[0], cvSmoothed_[0],
+                              CV_ZERO_OFFSET_A, POT_ADC_GAIN_A);
+    combinedB_ = CombineParam(potValues_[1], cvSmoothed_[1],
+                              CV_ZERO_OFFSET_B, POT_ADC_GAIN_B);
 
     // Encoder switch (still main-loop polled; a click spans many iterations).
     encoder_->Debounce();

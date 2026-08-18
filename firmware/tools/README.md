@@ -30,19 +30,3 @@ The app launches its own OpenOCD instance, finds `g_telemetry` via `nm` on
 - The telemetry struct layout is `STRUCT_FMT` in the script; it must match
   `struct Telemetry` in `ogham_main.cpp`. If you change the struct, update both.
 - The struct address is found automatically (via `nm`); it moves on rebuilds.
-
-## Other tools here
-
-This README covers `ogham_monitor.py`. The rest, briefly:
-
-- `read_once.py` — one telemetry snapshot instead of a live view.
-- `cv_range.py` — sweeps the ENV Out and reports the voltage range reached.
-- `bpm_probe.py` — watches the tempo estimator's internal state (confidence,
-  period, whether it is locked). Imports `ogham_monitor`, so the same OpenOCD and
-  `arm-none-eabi-nm` paths apply.
-- `voct_range.cpp`, `voct_tone.cpp` — offline analysis of the shipped bank under
-  V/oct: which formulas sound at a given pitch, and what register each one lands
-  in. They compile against `../src/formulas.h` alone, so they need no hardware:
-
-      c++ -std=c++17 -O2 -I../src voct_range.cpp -o voct_range
-

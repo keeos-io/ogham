@@ -9,7 +9,7 @@
 //
 // This file is part of the Ogham firmware. See LICENSE-firmware.txt at the
 // repository root for the full licence text.
-// https://github.com/stevec64/keeos-ogham
+// https://github.com/keeos-io/ogham
 // -----------------------------------------------------------------------------
 
 #pragma once
@@ -61,6 +61,9 @@ public:
 
     // --- Telemetry accessors (for the PC monitor) ---
     float GetPot(int i) const { return (i >= 0 && i < 4) ? potValues_[i] : 0.0f; }     // raw ADC0-3
+
+    // Pot + CV summed in software (the analog sum rails at 79% of pot travel).
+    static float CombineParam(float pot, float sumAdc, float offset, float gain);
     float GetCvRaw(int i) const { return (i >= 0 && i < 2) ? cvSmoothed_[i] : 0.0f; }  // raw ADC4-5
     bool GetGate() const { return gate_; }
     bool GetClock() const { return clock_; }
@@ -126,6 +129,28 @@ private:
     // To recover a 0-1 parameter value: invert and normalize.
     // Combined-channel zero-offset (ADC at 0V CV + pot CCW), measured per channel
     // on this board via the monitor (2026-06-25). Was 0.758 assumed.
-    static constexpr float CV_ZERO_OFFSET_A = 0.7431f;
-    static constexpr float CV_ZERO_OFFSET_B = 0.7500f;
+    // ADC4/5 read the MCP6004 sum of pot and CV, inverted: adc = OFFSET - GAIN*pot
+    // with no CV patched. Measured over a full sweep on 2026-08-11 (236 samples,
+    // fit residual < 0.006, i.e. linear):
+    //
+    //     A:  adc = 0.7501 - 0.9990 * pot      B:  adc = 0.7499 - 0.9984 * pot
+    //
+    // A's offset had been 0.7431, about 1% low, so channel A carried a small
+    // scale error against B. Both now measured.
+    static constexpr float CV_ZERO_OFFSET_A = 0.7501f;
+    static constexpr float CV_ZERO_OFFSET_B = 0.7499f;
+
+    // Slope of that line: how much the summed channel moves per unit of pot.
+    // The pots reach 0.9508, so the amp would need a gain of 0.789 to arrive at
+    // the rail exactly at full rotation. At ~1.0 it gets there at 0.751 -- 79% of
+    // travel -- and the last fifth of the rotation is dead. That is a hardware
+    // gain choice; the firmware works around it by reading the pot directly.
+    static constexpr float POT_ADC_GAIN_A = 0.9990f;
+    static constexpr float POT_ADC_GAIN_B = 0.9984f;
+
+    // Raw ADC0/1 at full clockwise. Deliberately a little under the measured
+    // 0.9508 so every module reaches 255 before the end stop rather than falling
+    // a count or two short; the cost is that the top ~0.6% of travel is already
+    // at maximum. VERIFY ON A SECOND MODULE before trusting the margin.
+    static constexpr float POT_FULL_SCALE = 0.9450f;
 };

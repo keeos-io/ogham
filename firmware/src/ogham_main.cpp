@@ -9,7 +9,7 @@
 //
 // This file is part of the Ogham firmware. See LICENSE-firmware.txt at the
 // repository root for the full licence text.
-// https://github.com/stevec64/keeos-ogham
+// https://github.com/keeos-io/ogham
 // -----------------------------------------------------------------------------
 
 #include "daisy_seed.h"
@@ -69,7 +69,7 @@ static BpmClock bpmClock;
 //     future build can read the previously-installed version (e.g. to migrate).
 //     BUMP THIS on every flashed release. ---
 static constexpr int      FW_VER_MAJOR = 1;
-static constexpr int      FW_VER_MINOR = 14;  // 0..99, shown as two digits (v1.14)
+static constexpr int      FW_VER_MINOR = 15;  // 0..99, shown as two digits (v1.15)
 static constexpr uint32_t FW_VERSION   = (uint32_t)FW_VER_MAJOR * 100u + FW_VER_MINOR; // 100 = v1.00
 
 // --- Persisted settings (QSPI). Bump SETTINGS_VERSION to invalidate old layouts. ---
@@ -352,7 +352,6 @@ static constexpr float VOCT_RATE_TUNE   = VOCT_BASE_HZ / VOCT_NATURAL_HZ;
 // below that the formula crawls rather than plays.
 static constexpr float VOCT_RATE_MIN    = 1.0f / 64.0f;
 // Start offset resolution: the menu field counts 64-tick steps.
-static constexpr uint32_t VOCT_OFFSET_STEP = 64;
 
 // Median-3 period filter: rejects a single spurious/missed edge.
 static uint32_t clkP0 = 0, clkP1 = 0, clkP2 = 0;
@@ -644,7 +643,6 @@ int main(void) {
         g_fx = s.fx;
         pipeline.SetFxChain(g_fx);
         engine.SetParamQuant(g_fx.paramQuant);  // engine-side; not via the pipeline
-        engine.SetStartOffset((uint32_t)g_fx.voctOffset * VOCT_OFFSET_STEP);
         // Restore a decoupled Out2 drone from its persisted frozen state (exact rate
         // + A/B), rather than letting the per-loop toggle re-snapshot live boot state
         // (which shifted the drone's pitch/sound across power cycles).
@@ -844,16 +842,6 @@ int main(void) {
                         if (nv < 0) nv = 0;
                         if (nv > 99) nv = 99;
                         g_fx.cvSlewFall = (uint8_t)nv;
-                    } else if (fxField == FX_FIELD_VOCTOFS) {
-                        // V/oct start offset, 0..255 in 64-tick steps (0..16320).
-                        // Accelerated like a param, because the useful openings
-                        // run to thousands of ticks and stepping there one
-                        // detent at a time would be tedious.
-                        int nv = (int)g_fx.voctOffset + delta;
-                        if (nv < 0) nv = 0;
-                        if (nv > 255) nv = 255;
-                        g_fx.voctOffset = (uint8_t)nv;
-                        engine.SetStartOffset((uint32_t)g_fx.voctOffset * VOCT_OFFSET_STEP);
                     } else if (fxField == FX_FIELD_CVHOLD) {
                         // CV Out hold: 0 = off (every tick) .. 8 = every 256 ticks,
                         // power-of-2 steps -- one detent per step, not accelerated
@@ -1202,7 +1190,6 @@ int main(void) {
                 else if (fxField == FX_FIELD_CVSLEWRISE) val = g_fx.cvSlewRise;
                 else if (fxField == FX_FIELD_CVSLEWFALL) val = g_fx.cvSlewFall;
                 else if (fxField == FX_FIELD_CVHOLD)   val = (g_fx.cvHold == 0) ? 0 : (1 << g_fx.cvHold);
-                else if (fxField == FX_FIELD_VOCTOFS)  val = g_fx.voctOffset;
                 else if (fxField != FX_FIELD_CHAIN)  val = *FxFieldPtr(g_fx, fxField);
                 // Edit mode: flash the value at ~80% duty (~600ms period) so it's
                 // clear you're editing vs navigating.

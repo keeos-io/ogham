@@ -2,7 +2,7 @@
 
 Step-by-step for **Windows**, **macOS** and **Linux**. If you only want to *run*
 the firmware, you do not need any of this — download a `.bin` from the
-[releases page](https://github.com/stevec64/keeos-ogham/releases) or use the
+[releases page](https://github.com/keeos-io/ogham/releases) or use the
 in-browser flasher at <https://keeos.io/firmware/ogham/>, and skip to
 [Flashing](#flashing).
 
@@ -177,7 +177,7 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 Identical on all three platforms once the tools are in place.
 
 ```bash
-git clone --recurse-submodules https://github.com/stevec64/keeos-ogham.git
+git clone --recurse-submodules https://github.com/keeos-io/ogham.git
 cd keeos-ogham
 make -C lib/libDaisy -j8      # a few minutes the first time
 make -C lib/DaisySP  -j8
@@ -270,4 +270,4 @@ from the rack.
 | Builds fine, checksum differs | Different compiler version or unpinned submodules. Harmless unless you are verifying a release |
 
 Anything not covered here, please open an
-[issue](https://github.com/stevec64/keeos-ogham/issues).
+[issue](https://github.com/keeos-io/ogham/issues).

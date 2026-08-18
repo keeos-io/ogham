@@ -13,7 +13,7 @@ the authority; this file covers only what is specific to the firmware itself.
 The short version, once the tools are installed:
 
 ```bash
-git clone --recurse-submodules https://github.com/stevec64/keeos-ogham.git
+git clone --recurse-submodules https://github.com/keeos-io/ogham.git
 cd keeos-ogham
 make -C lib/libDaisy -j8 && make -C lib/DaisySP -j8
 cd firmware && make -j8            # -> build/ogham_bytebeat.{elf,bin,hex}
@@ -80,10 +80,19 @@ behave as they do in browser bytebeat tools.
 
 `formulas.h` and `formulas.cpp` are **generated**, not hand-written — the bank is
 translated out of the curated library by `tools/gen_ogham_bank.cpp` in the
-bytebeat repository, which emits the manual's Appendix A from the same manifest
-and compares every generated function against the evaluator the formulas were
-auditioned on. Change the library and regenerate rather than editing these two
-files, or the module and the manual drift apart.
+bytebeat repository (the search and curation tooling, which is not published).
+The generator emits the manual's Appendix A from the same manifest, and compares
+every generated function against the evaluator the formulas were auditioned on.
+Change the library and regenerate rather than editing these two files, or the
+module and the manual drift apart.
+
+Which formula lands in which slot is stored on the curated formula itself rather
+than derived from its position in the library: the generator reads those numbers
+and does not sort, group or renumber. Slots are assigned in the bytebeat app's
+CURATE view, which can also preview the whole bank against the firmware's
+current `formulas.h` before anything is generated. The end-to-end process —
+including the flash-size check, which is the binding constraint on this 128 KB
+region — is `docs/PUBLISHING-THE-BANK.md` in that repository.
 
 Appendix A of the manual lists every formula's expression and what A and B change.
 

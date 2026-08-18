@@ -9,7 +9,7 @@
 //
 // This file is part of the Ogham firmware. See LICENSE-firmware.txt at the
 // repository root for the full licence text.
-// https://github.com/stevec64/keeos-ogham
+// https://github.com/keeos-io/ogham
 // -----------------------------------------------------------------------------
 
 #include "ogham_audio_pipeline.h"
@@ -210,7 +210,7 @@ FxChainConfig AudioPipeline::DefaultFxChain() {
     c.cvSlewRise   = 0;  // CV Out slew off (instant; matches pre-daisy-* behaviour)
     c.cvSlewFall   = 0;  // CV Out slew off (instant; matches pre-daisy-* behaviour)
     c.cvHold       = 0;  // CV Out hold off (every tick; matches pre-daisy-* behaviour)
-    c.voctOffset   = 0;  // V/oct start offset off (sync restarts at t = 0)
+    c.reserved0    = 0;  // withdrawn field; see FxChainConfig
     return c;
 }
 

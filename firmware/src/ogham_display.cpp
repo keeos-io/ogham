@@ -9,7 +9,7 @@
 //
 // This file is part of the Ogham firmware. See LICENSE-firmware.txt at the
 // repository root for the full licence text.
-// https://github.com/stevec64/keeos-ogham
+// https://github.com/keeos-io/ogham
 // -----------------------------------------------------------------------------
 
 #include "ogham_display.h"
@@ -167,17 +167,6 @@ void Display::ShowFxEdit(int field, int value, bool parallel, bool dpClean, bool
         if (blankValue)      { segs[1] = segs[2] = segs[3] = 0x00; }
         else if (value)      { segs[1] = TM1637::Encode('o'); segs[2] = TM1637::Encode('n'); segs[3] = 0x00; }
         else                 { segs[1] = TM1637::Encode('o'); segs[2] = TM1637::Encode('F'); segs[3] = TM1637::Encode('F'); }
-    } else if (field == 22) {
-        // V/oct start offset: "P.NNN", 0..255 counting 64-tick steps. 'P' for
-        // the point in the formula a synced window starts from.
-        segs[0] = TM1637::Encode('P') | 0x80;
-        if (blankValue) { segs[1] = segs[2] = segs[3] = 0x00; }
-        else {
-            int v = value; if (v < 0) v = 0; if (v > 255) v = 255;
-            segs[1] = (v >= 100) ? TM1637::Encode((char)('0' + (v / 100))) : 0x00;
-            segs[2] = (v >= 10)  ? TM1637::Encode((char)('0' + ((v / 10) % 10))) : 0x00;
-            segs[3] = TM1637::Encode((char)('0' + (v % 10)));
-        }
     } else {
         // Param fields 2..13: "T x. NN" — digit0 = FX (C/F/P), digit1 = sub
         // (L/t/a/b) + separator DP. stage param field = 2 + stage*4 + sub.

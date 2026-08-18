@@ -38,7 +38,7 @@ set-up for Windows, macOS and Linux; [`firmware/README.md`](firmware/README.md)
 covers the firmware itself. In short:
 
 ```bash
-git clone --recurse-submodules https://github.com/stevec64/keeos-ogham.git
+git clone --recurse-submodules https://github.com/keeos-io/ogham.git
 cd keeos-ogham && make -C lib/libDaisy -j8 && make -C lib/DaisySP -j8
 cd firmware && make -j8
 ```

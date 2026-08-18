@@ -10,7 +10,7 @@
 #
 # This file is part of the Ogham firmware. See LICENSE-firmware.txt at the
 # repository root for the full licence text.
-# https://github.com/stevec64/keeos-ogham
+# https://github.com/keeos-io/ogham
 # -----------------------------------------------------------------------------
 
 """
@@ -40,8 +40,8 @@ OPENOCD   = r"C:/Users/steve/AppData/Local/Microsoft/WinGet/Packages/xpack-dev-t
 NM        = r"C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/arm-none-eabi-nm.exe"
 TELNET_PORT = 4444
 DEFAULT_ADDR = 0x240008C8           # fallback if nm lookup fails
-STRUCT_FMT  = "<5I5i10f3I"          # must match struct Telemetry
-STRUCT_WORDS = 23
+STRUCT_FMT  = "<5I4i10f3I"          # must match struct Telemetry
+STRUCT_WORDS = 22
 MAGIC = 0x4F474841                  # "OGHA"
 POLL_MS = 80                        # ~12 Hz
 
@@ -377,7 +377,7 @@ class App:
         self.root.after(POLL_MS, self.poll)
 
     def update(self, v):
-        (magic, counter, segs, modeState, ioState, out1, out2, delay,
+        (magic, counter, segs, modeState, ioState, out1, out2,
          pA, pB, rate, extRate, potA, potB, potR, potL,
          cA, cB, cvA, cvB, cpuPeak, cpuPer, syncCount) = v
         if magic != MAGIC:
@@ -399,7 +399,6 @@ class App:
         self.state.config(text=(
             f"Mode    : {mode}   editing {voice}\n"
             f"Out1 fmla: {out1+1:>3}   Out2 fmla: {out2+1:>3}\n"
-            f"Delay   : {delay:>3} cycles\n"
             f"Param A : {pA:>3}   Param B : {pB:>3}\n"
             f"Rate    : {rate:5.2f}x   ext-clk: {'ON ' if extClk else 'off'} {extRate:4.2f}\n"
             f"Lo-Fi   : {'CLEAN' if clean else 'active'}\n"

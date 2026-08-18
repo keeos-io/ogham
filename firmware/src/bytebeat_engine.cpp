@@ -9,7 +9,7 @@
 //
 // This file is part of the Ogham firmware. See LICENSE-firmware.txt at the
 // repository root for the full licence text.
-// https://github.com/stevec64/keeos-ogham
+// https://github.com/keeos-io/ogham
 // -----------------------------------------------------------------------------
 
 #include "bytebeat_engine.h"
@@ -100,9 +100,25 @@ void BytebeatEngine::SetFormula1(int index) {
     if (count == 0) return;
     if (index < 0) index = 0;            // clamp (encoder no longer wraps)
     if (index >= count) index = count - 1;
+    const bool changed = (index != formula1Index_);
     formula1Index_ = index;
     formula1_ = GetFormulaAt(index);
     UpdatePhaseIncrement();  // voice 1 clocks the master phase
+
+    // Restart the waveform when the formula actually changes, so selecting a
+    // one-shot fires it.
+    //
+    // `t` is otherwise free-running and only a Sync edge resets it, so after a
+    // few minutes it sits in the millions. Roughly a fifth of the bank is
+    // percussive one-shots that make their sound in the first few thousand ticks
+    // and are static ever after -- so selecting one gave silence, at every A and
+    // B, with nothing to indicate why. Measured lifetimes run from 0.38 s to
+    // about a minute (tools/formula_life.cpp).
+    //
+    // Requesting the reset rather than doing it here means Process() performs it
+    // on the audio thread through the same path Sync uses, including honouring
+    // the start offset.
+    if (changed) syncPending_ = true;
 }
 
 void BytebeatEngine::SetFormula2(int index) {
@@ -110,8 +126,18 @@ void BytebeatEngine::SetFormula2(int index) {
     if (count == 0) return;
     if (index < 0) index = 0;
     if (index >= count) index = count - 1;
+    const bool changed = (index != formula2Index_);
     formula2Index_ = index;
     formula2_ = GetFormulaAt(index);
+
+    // Same restart as voice 1, so a one-shot picked on Out 2 also fires. Both
+    // voices share the master phase, so this restarts Out 1 too — they are
+    // already locked to each other and stay that way.
+    //
+    // Skipped while Out 2 is a decoupled drone: the drone runs on its own
+    // accumulator and would not restart anyway, so all this would do is
+    // interrupt Out 1 for a change the user made to a frozen voice.
+    if (changed && !out2Decoupled_) syncPending_ = true;
 }
 
 void BytebeatEngine::SetRate(float rate) {
@@ -180,14 +206,11 @@ void BytebeatEngine::Process(float& out1, float& out2) {
         if (pitchSyncPhase_ >= 1.0f) { pitchSyncPhase_ -= 1.0f; doReset = true; }
     }
     if (doReset) {
-        // Restart at the configured offset rather than always at t = 0, so a
-        // synced window can be placed past a formula's dead opening.
-        const uint32_t t0 = startOffset_;
-        phase_ = (uint64_t)t0 << 32;
-        t_ = t0;
-        curA_ = EvalInterp(f1, t0, paramA_, paramB_, paramQuant_);
+        phase_ = 0;
+        t_ = 0;
+        curA_ = EvalInterp(f1, 0, paramA_, paramB_, paramQuant_);
         prevA_ = curA_;
-        curB_ = EvalInterp(f2, t0, paramA_, paramB_, paramQuant_);
+        curB_ = EvalInterp(f2, 0u, paramA_, paramB_, paramQuant_);
         prevB_ = curB_;
     }
 

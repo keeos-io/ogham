@@ -6,6 +6,83 @@ to the corresponding GitHub Release and their SHA-256 published.
 Full release notes, and the in-browser flasher, live at
 <https://keeos.io/firmware/ogham/>.
 
+## 1.15 — 2026-08-18
+
+The A and B knobs get their top fifth back, one-shot formulas fire when you
+select them, and a menu field added the day before is withdrawn.
+
+- **A and B stopped climbing at 2 o'clock.** Both knobs reached 255 at about 80%
+  of travel, on every module, and the last fifth of the rotation did nothing.
+  The pot and its CV were summed in hardware into a single ADC, and that sum sits
+  on the 0 V rail before the pot finishes its sweep — by the time the firmware
+  saw it, the information was gone. The pot is now read from its own ADC and the
+  CV recovered as the sum's departure from the fitted line: 255 arrives at 100%
+  of travel on both channels. Bipolar CV behaviour is unchanged, measured
+  symmetric at +83/−82 counts about the pot's position. Channel A had also
+  carried a ~1% scale error against B since the original port.
+- **Selecting a one-shot fires it.** Roughly a fifth of the bank is percussive
+  one-shots that make their sound within the first few thousand ticks and are
+  silent ever after, so landing on one after a few minutes of playing gave
+  nothing at all — at every A and B, with no indication why. Changing either
+  voice's formula now restarts the waveform. A decoupled Out 2 drone is not
+  affected.
+- **The V/oct start offset (`P`) field is withdrawn**, added and removed the same
+  day. Skipping a formula's silent opening is better described in the manual than
+  dialled in from a menu, so the Sync chapter gains a section on formulas that
+  start silent — the first remedy being to turn Rate up. Settings are *not*
+  reset: the persisted byte was kept as a reserved field, so the stored layout
+  and `SETTINGS_VERSION` 16 are unchanged.
+- **Appendix A marks the one-shots.** Every formula in the manual now says
+  whether it plays continuously, one-shots, or one-shots only at some A/B
+  settings, classified by measurement across the whole bank rather than by ear.
+- Flash: 127,760 B, 97.47% of the 128 KB region.
+
+## 1.14 — 2026-08-11
+
+Pitch, tempo and the low-pass gate all change here.
+
+> **This update resets your settings.** The stored layout changed, so every
+> module returns to factory defaults on first boot: both voices to `F0`, and the
+> whole menu — FX chain, LPG, ENV Out — back to defaults.
+
+- **V/oct transposes instead of hard-syncing.** It previously reset the formula
+  every cycle to force a pitch, which gave a clean note but discarded most of
+  what the formula was doing, and silenced plenty of formulas outright. It now
+  scales the playback rate exponentially, so every partial moves together —
+  varispeed transposition rather than a per-cycle reset. The Rate knob becomes a
+  quantized octave placement, ÷32 to ×32, which is what puts a formula into a
+  register you can play.
+- **Clock In assumes one pulse per beat**, not per sixteenth — what most gear
+  actually sends. At the same knob position a patched clock now plays about four
+  times slower and sits much closer to native speed. The dropout timeouts moved
+  from 2 s to 10 s with it: a 4/4 bar at 120 BPM is exactly 2 s, so a slow clock
+  had been reading as a stopped one.
+- **The LPG decay knee moves to 40 = 500 ms** (it was 50 = 10 s). The bottom
+  third of the dial had crammed a 166× range into 30 numbers while the top half
+  spent 49 values on a 2× range nobody could hear. A stored patch keeps its
+  number but sounds different.
+- **A and B recover their odd numbers** — a resolution loss in the parameter
+  path, separate from the range problem fixed in 1.15.
+
+## 1.13 — 2026-08-10
+
+The encoder stops missing clicks, and effects you are not using stop costing you
+CPU. Settings are not reset.
+
+- **The encoder no longer drops small movements.** Its scan ran on the
+  lowest-priority timer interrupt in the system, below the audio callback: at
+  light load that cost nothing, but under a full FX chain the effective scan rate
+  collapsed by nearly half, and a brisk turn crossed two positions between looks
+  — at which point the movement was discarded rather than delayed. The scan
+  interrupt now outranks the audio DMA. Measured on the same gesture: 21 detents
+  decoded under load, against 6 before.
+- **A stage at Level 0 is skipped, not just mixed out.** All three FX stages were
+  evaluated and then discarded, so a one-effect patch paid for the whole chain. A
+  typical one-effect patch now runs at about 20% CPU. Stage phasors keep running
+  while skipped, so a sweep does not jump when its level comes back up.
+- v1.12 was a bench build flashed to one module during the encoder
+  investigation, and is folded into this release.
+
 ## 1.11 — 2026-08-10
 
 The full bank: all 100 slots are now real formulas, grouped by character.

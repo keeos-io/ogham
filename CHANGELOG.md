@@ -55,7 +55,7 @@ Pitch, tempo and the low-pass gate all change here.
 
 > **This update resets your settings.** The stored layout changed, so every
 > module returns to factory defaults on first boot: both voices to `F0`, and the
-> whole menu — FX chain, LPG, ENV Out — back to defaults.
+> whole menu — FX chain, LPG, CV Out — back to defaults.
 
 - **V/oct transposes instead of hard-syncing.** It previously reset the formula
   every cycle to force a pitch, which gave a clean note but discarded most of

@@ -37,11 +37,11 @@ the SVG sources reference them by name.
 |---|---|---|
 | **Uncial Antiqua** | the "ogham" wordmark | SIL Open Font License 1.1 — <https://fonts.google.com/specimen/Uncial+Antiqua> |
 | **Noto Sans Ogham** | the ogham script characters | SIL Open Font License 1.1 — <https://fonts.google.com/noto/specimen/Noto+Sans+Ogham> |
-| **Bahnschrift** | control labels | **Proprietary — Microsoft.** Ships with Windows 10 and later. Not redistributable, and not available on macOS or Linux. |
+| **DINish** | control labels | SIL Open Font License 1.1 — <https://fonts.playbeing.com/dinish/> |
 
 ### What this means in practice
 
-**The fabrication files do not depend on any of them.** `hardware/panel/PanelPCB`
+**The fabrication files do not depend on any of them.** `hardware/panel/PanelPCB-v2`
 and the gerbers in its `production/` directory carry the artwork as **polygons**,
 converted from the SVG by svg2shenzhen. The only text left in the footprint is
 KiCad's own `Ref**`/`Val**` placeholders, which do not print. You can order a
@@ -52,15 +52,16 @@ the intended result.
 `hardware/panel/*.svg` without these fonts installed and the renderer will
 substitute — the lettering will still appear, but with different metrics, so it
 will not match the fabricated panel and may overlap its own layout. If you intend
-to *edit* the panel rather than just fabricate it:
+to *edit* the panel rather than just fabricate it, install all three: Uncial
+Antiqua and Noto Sans Ogham are on Google Fonts, and DINish is at
+<https://fonts.playbeing.com/dinish/>. All three are OFL, free, and available on
+every platform.
 
-- Install Uncial Antiqua and Noto Sans Ogham (both free, both OFL, both on Google
-  Fonts).
-- **Bahnschrift is the awkward one.** It is a Windows system font and cannot be
-  redistributed. On macOS or Linux you will need to substitute it — DIN 1451 and
-  its descendants are the closest free equivalents — and re-lay-out the labels,
-  or work from the polygon version instead. Replacing it outright is a reasonable
-  choice for a fork, and avoids the issue entirely.
+The control labels were set in Bahnschrift until the v2 panel artwork. That is a
+Windows system font, proprietary to Microsoft and not redistributable, so editing
+the panel on macOS or Linux meant substituting it and re-laying out the labels.
+DINish is a DIN 1451 descendant and takes its place with no such condition
+attached.
 
 ## Fabrication
 

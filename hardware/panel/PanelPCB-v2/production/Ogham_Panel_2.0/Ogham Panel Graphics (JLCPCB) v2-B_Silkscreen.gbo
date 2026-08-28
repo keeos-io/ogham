@@ -1,0 +1,31 @@
+G04 #@! TF.GenerationSoftware,KiCad,Pcbnew,10.0.3*
+G04 #@! TF.CreationDate,2026-08-19T11:11:17+01:00*
+G04 #@! TF.ProjectId,Ogham Panel Graphics (JLCPCB) v2,4f676861-6d20-4506-916e-656c20477261,2.0*
+G04 #@! TF.SameCoordinates,Original*
+G04 #@! TF.FileFunction,Legend,Bot*
+G04 #@! TF.FilePolarity,Positive*
+%FSLAX46Y46*%
+G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+G04 Created by KiCad (PCBNEW 10.0.3) date 2026-08-19 11:11:17*
+%MOMM*%
+%LPD*%
+G01*
+G04 APERTURE LIST*
+%ADD10O,4.500000X3.500000*%
+G04 APERTURE END LIST*
+%LPC*%
+D10*
+G04 #@! TO.C,REF\u002A\u002A*
+X113257000Y-175331000D03*
+G04 #@! TD*
+G04 #@! TO.C,REF\u002A\u002A*
+X77697000Y-175331000D03*
+G04 #@! TD*
+G04 #@! TO.C,REF\u002A\u002A*
+X113257000Y-52831000D03*
+G04 #@! TD*
+G04 #@! TO.C,REF\u002A\u002A*
+X77697000Y-52831000D03*
+G04 #@! TD*
+%LPD*%
+M02*

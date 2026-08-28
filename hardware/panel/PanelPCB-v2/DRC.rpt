@@ -1,0 +1,166 @@
+** Drc report for Ogham Panel Graphics (JLCPCB) v2.kicad_pcb **
+** Created on 2026-08-19T11:05:56 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 37 DRC violations **
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.0500 mm; actual 0.0000 mm)
+    Rule: board setup constraints edge; error
+    @(72.9772 mm, 163.6026 mm): Segment on Edge.Cuts
+    @(77.5824 mm, 159.1233 mm): Polygon [<no net>] of G*** on F.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.0500 mm; actual 0.0000 mm)
+    Rule: board setup constraints edge; error
+    @(98.9771 mm, 163.6026 mm): Segment on Edge.Cuts
+    @(103.9722 mm, 159.1262 mm): Polygon [<no net>] of G*** on F.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.0500 mm; actual 0.0000 mm)
+    Rule: board setup constraints edge; error
+    @(85.9769 mm, 163.6026 mm): Segment on Edge.Cuts
+    @(87.8975 mm, 159.1261 mm): Polygon [<no net>] of G*** on F.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.0500 mm; actual 0.0000 mm)
+    Rule: board setup constraints edge; error
+    @(111.9909 mm, 163.3106 mm): Segment on Edge.Cuts
+    @(115.3264 mm, 159.1234 mm): Polygon [<no net>] of G*** on F.Cu
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (segment has null or very small length: 0 nm)
+    Local override; error
+    @(70.2270 mm, 50.8306 mm): Segment on Edge.Cuts
+    @(70.2270 mm, 177.3306 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(114.7720 mm, 160.6096 mm): Segment on Edge.Cuts
+    @(115.0820 mm, 160.6046 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(114.7720 mm, 160.6096 mm): Segment on Edge.Cuts
+    @(115.0820 mm, 160.6046 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(95.2383 mm, 112.0304 mm): Segment on Edge.Cuts
+    @(95.2383 mm, 112.0304 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(95.2383 mm, 112.0304 mm): Segment on Edge.Cuts
+    @(95.2383 mm, 112.0304 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(101.7723 mm, 160.6096 mm): Segment on Edge.Cuts
+    @(102.0822 mm, 160.6046 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(101.7723 mm, 160.6096 mm): Segment on Edge.Cuts
+    @(102.0822 mm, 160.6046 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(101.7723 mm, 144.1091 mm): Segment on Edge.Cuts
+    @(101.7723 mm, 144.1091 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(101.7723 mm, 144.1091 mm): Segment on Edge.Cuts
+    @(101.7723 mm, 144.1091 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(88.7721 mm, 160.6096 mm): Segment on Edge.Cuts
+    @(89.0820 mm, 160.6046 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(88.7721 mm, 160.6096 mm): Segment on Edge.Cuts
+    @(89.0820 mm, 160.6046 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(77.4384 mm, 91.5304 mm): Segment on Edge.Cuts
+    @(77.8000 mm, 91.5243 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(77.4384 mm, 91.5304 mm): Segment on Edge.Cuts
+    @(77.8000 mm, 91.5243 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(82.6000 mm, 62.4500 mm): Segment on Edge.Cuts
+    @(82.6000 mm, 74.9500 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(82.6000 mm, 62.4500 mm): Segment on Edge.Cuts
+    @(82.6000 mm, 74.9500 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(88.7721 mm, 144.1091 mm): Segment on Edge.Cuts
+    @(88.7721 mm, 144.1091 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(88.7721 mm, 144.1091 mm): Segment on Edge.Cuts
+    @(88.7721 mm, 144.1091 mm): Segment on Edge.Cuts
+[invalid_outline]: Board has malformed outline (self-intersecting)
+    Local override; error
+    @(75.7723 mm, 144.1091 mm): Segment on Edge.Cuts
+    @(76.0823 mm, 144.1039 mm): Segment on Edge.Cuts
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **

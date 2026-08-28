@@ -20,7 +20,7 @@ fabricate by mistake.
 | Path | Contents |
 |---|---|
 | `ogham-merged-v1.0/` | Schematics (hierarchical: power, MCU, CV I/O, audio, UI), PCB, netlist |
-| `panel/` | Panel artwork SVGs, and `PanelPCB/` — the panel as a fabricable PCB |
+| `panel/` | Panel artwork SVGs, and the panel as a fabricable PCB — `PanelPCB-v2/` is current |
 | `production/` | Gerbers, BOM, placement, IPC netlist, and the interactive BOM |
 
 The schematic is a two-level hierarchy: `ogham-merged-v1.0` is the root, and it
@@ -104,16 +104,23 @@ Sources that have worked (UK):
 
 ## Panel
 
-`panel/` holds the artwork as SVG and as a fabricable PCB (`PanelPCB/`), which is
-how the panels were actually made — a PCB panel is cheap, flat, and takes the
-graphics as silkscreen.
+`panel/` holds the artwork as SVG and as a fabricable PCB, which is how the
+panels were actually made — a PCB panel is cheap, flat, and takes the graphics as
+silkscreen.
+
+**`PanelPCB-v2/` and `Ogham Panel Graphics (JLCPCB) v2.svg` are the current
+revision**, and the one the built modules use. `PanelPCB/` and the unversioned
+SVG are the first revision, kept because the earliest modules were made from
+them. Order from v2.
 
 **The fabrication files do not depend on any fonts.** The artwork is stored as
-polygons, converted from the SVG, so a panel ordered from `PanelPCB/production/`
-comes out right regardless of what is installed on your machine.
+polygons, converted from the SVG, so a panel ordered from
+`PanelPCB-v2/production/` comes out right regardless of what is installed on your
+machine.
 
-**Editing the SVG does need fonts** — including Bahnschrift, which is a Windows
-system font and cannot be redistributed. See
+**Editing the SVG does need fonts**, though all three are now free and
+redistributable — the v2 artwork replaced Bahnschrift, a Windows system font,
+with DINish. See
 [`../THIRD-PARTY.md`](../THIRD-PARTY.md) for the full list and what to do on
 macOS or Linux.
 
@@ -171,14 +178,16 @@ fab run.
 
 ### Panel artwork and labelling
 
-- **The main label font is Bahnschrift**, a Microsoft system font that cannot be
-  redistributed and is not available on macOS or Linux. It is being replaced with
-  a freely licensed face. The fabrication files are unaffected — they carry the
-  artwork as polygons - but editing the SVG needs it today. See
+Both of the issues that used to be listed here are fixed in the v2 artwork, and
+are recorded because the first panels were made before it:
+
+- **The label font was Bahnschrift**, a Microsoft system font that cannot be
+  redistributed and is not available on macOS or Linux. v2 uses DINish, which is
+  OFL — so every typeface on the panel is now free. See
   [`../THIRD-PARTY.md`](../THIRD-PARTY.md).
-- **The panel legend reads "ENV OUT"** where "CV OUT" describes the jack better:
-  it outputs a raw bytebeat as DC as well as an envelope follower. It is being
-  renamed to CV OUT.
+- **The legend read "ENV OUT"** where "CV Out" describes the jack better: it
+  outputs a raw bytebeat as DC as well as an envelope follower. v2 reads
+  "CV Out".
 
 ## Design notes
 

@@ -28,6 +28,32 @@ pulls in `ogham-logic-v2.0` (→ power, MCU, CV I/O) and `ogham-ui-v0.2` (→ au
 UI). Those two keep the sheet names they had when the design was two separate
 boards — they are **not** old revisions, they are live sub-sheets of this one.
 
+## Browse the design without installing anything
+
+[KiCanvas](https://kicanvas.org) renders KiCad files in the browser, straight
+from this repository — pan, zoom, click a symbol, follow a net. Nothing to
+install, nothing to download.
+
+| | |
+|---|---|
+| Schematic and PCB | [Open in KiCanvas](https://kicanvas.org/?github=https://github.com/keeos-io/ogham/tree/main/hardware/ogham-merged-v1.0) |
+| Panel PCB | [Open in KiCanvas](https://kicanvas.org/?github=https://github.com/keeos-io/ogham/tree/main/hardware/panel/PanelPCB-v2) |
+
+Both links point at a **directory**, not at a file, and that is deliberate. Given
+a single `.kicad_sch` KiCanvas loads it alone, which for a hierarchical design
+means the root sheet and nothing below it — you would get a page of sheet symbols
+with no way into them. Pointed at the directory it enumerates every file, so all
+nine sheets resolve and the board is in the same viewer, behind the file picker
+at the top left.
+
+This matters more than convenience: these are **KiCad 10** sources, and KiCad 9
+cannot open them at all. Until you have KiCad 10 in front of you, the links above
+are the only way to read the circuit.
+
+KiCanvas is a third-party viewer and fetches from GitHub anonymously, so it is
+subject to GitHub's rate limits and is nobody's idea of a permanent archive. The
+files in this repository are the source of truth; the links are a convenience.
+
 ## Having the boards made
 
 The package in `production/` is formatted for JLCPCB assembly, but the gerbers

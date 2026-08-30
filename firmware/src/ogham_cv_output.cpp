@@ -29,7 +29,7 @@ void CvOutput::Init(daisy::DacHandle* dac) {
 // Slew time constant in OUTPUT SAMPLES for a 0..99 value. Exponential,
 // CV_SLEW_MIN_S..CV_SLEW_MAX_S; 0 = off (instant, bit-exact passthrough).
 // One mapping for every CV Out mode -- a slew setting means the same number
-// of milliseconds whatever the engine is doing (daisy-*).
+// of milliseconds whatever the engine is doing.
 float CvOutput::SlewTauSamples(uint8_t v) {
     if (v == 0) return 0.0f;
     const float norm  = (float)v / 99.0f;
@@ -72,15 +72,11 @@ void CvOutput::SetCaptureInterval(float s1, float s2) {
 // DC modes DO need is the level compensation, because a one-pole on a
 // near-uncorrelated capture sequence can only shrink it toward the mean --
 // sd scales by sqrt((1-a)/(1+a)) for pole a. Both terms of a = exp(-K/tau)
-// are known, so the correction is exact for any tau; it does not have to be,
-// and no longer is, a constant.
+// are known, so the correction is exact for any tau.
 //
-// Amplitude still falls away once tau greatly exceeds the capture interval,
-// and no gain can invent modulation that the filter removed. That is honest:
-// a 5 s slew on a 2 kHz LFO really is nearly DC. Predictable behaviour was
-// worth more here than a clever mapping -- an earlier version scaled tau to
-// the capture interval to hold the depth constant, which made the rise/fall
-// time change with playback speed and was much harder to dial in.
+// Amplitude still falls away once tau greatly exceeds the capture interval, and
+// no gain can invent modulation that the filter removed. That is honest: a 5 s
+// slew on a 2 kHz LFO really is nearly DC.
 void CvOutput::RecomputeDcMakeup() {
     const float K      = captureSamples1_;      // voice 1 sets the CV timebase
     const float tauR   = SlewTauSamples(slewRiseVal_);
@@ -100,11 +96,10 @@ void CvOutput::RecomputeDcMakeup() {
         slewMakeup_ = g;
     }
 
-    // Centre the gain expands about. MUST stay well slower than the slew --
-    // the output is mean + gain*(slew - mean), so anything the mean tracks is
-    // added straight back at full speed. Tying it to the capture interval was
-    // wrong: with Hold off that made it ~100x FASTER than the slew, which read
-    // as "smooth locally, jagged overall". 8*tau, absolutely bounded.
+    // Centre the gain expands about. MUST stay well slower than the slew -- the
+    // output is mean + gain*(slew - mean), so anything the mean tracks is added
+    // straight back at full speed, and a centre faster than the slew reads as
+    // "smooth locally, jagged overall". 8*tau, absolutely bounded.
     float meanSamples = 8.0f * tauAvg;
     if (meanSamples < DC_MEAN_MIN_S * 48000.0f) meanSamples = DC_MEAN_MIN_S * 48000.0f;
     if (meanSamples > DC_MEAN_MAX_S * 48000.0f) meanSamples = DC_MEAN_MAX_S * 48000.0f;
@@ -124,7 +119,7 @@ static inline void EnvStep(float in, float& dc, float& env,
     else            env += relC * (rect - env);
 }
 
-// One Hold step for a DC-mode voice (daisy-*). Off: track the interpolated
+// One Hold step for a DC-mode voice. Off: track the interpolated
 // stream every sample. On: latch `holdSamp` whenever the pipeline says to
 // capture, and sit on it in between. Both the decimation counting and the
 // choice of when to capture (an odd phase of the window, never the degenerate
@@ -149,7 +144,7 @@ void CvOutput::ProcessSample(float out1Proc, float out2Proc, float raw1, float r
     HoldStep(raw2, holdSamp2, cap2, holdOn_, heldRaw2_);
 
     // Pick this sample's pre-slew target, in 0..1 DAC-drive units, for whichever
-    // mode is current, then run it through the ONE shared Slew stage (daisy-*).
+    // mode is current, then run it through the ONE shared Slew stage.
     // Switching modes with Slew engaged glides to the new target rather than
     // clicking -- the same behaviour as any other change while Slew is up.
     const bool dcMode = (mode_ == Mode::DcOut1 || mode_ == Mode::DcOut2);
@@ -163,10 +158,10 @@ void CvOutput::ProcessSample(float out1Proc, float out2Proc, float raw1, float r
     } else {
         float raw = (mode_ == Mode::DcOut2) ? heldRaw2_ : heldRaw1_;
         target = raw * 0.5f + 0.5f;     // -1..1 -> 0..1
-        // Slow centre for the make-up gain to work about (daisy-*).
+        // Slow centre for the make-up gain to work about.
         dcMean_ += dcMeanCoef_ * (target - dcMean_);
     }
-    // Independent rise/fall (daisy-*): pick the coefficient by direction. Both
+    // Independent rise/fall: pick the coefficient by direction. Both
     // are plain absolute times and shared by every mode, so a given Slew
     // setting takes the same wall-clock time to move whatever the engine or
     // the Rate knob is doing.

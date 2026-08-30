@@ -163,9 +163,8 @@ void BpmClock::Update(float rate) {
         if (fresh >= FLUX_BUF_SIZE && !locked_) {
             // Out of data. Adopt the median of whatever was gathered rather
             // than emitting no clock at all — the confidence value says how
-            // little this is worth. The old code locked on the first estimate,
-            // so it always produced a clock when any estimate succeeded; not
-            // regressing that matters more here than holding out for agreement.
+            // little this is worth. A clock of some sort beats none whenever any
+            // estimate succeeded.
             if (!TryLock(1) && bpmHistCount_ > 0) {
                 baseBpm_ = MedianOf(bpmHist_, bpmHistCount_);
                 confidence_ = 0.0f;
@@ -263,8 +262,8 @@ void BpmClock::PushEstimate(float bpm, float peak) {
 }
 
 // Adopt the median of the collected estimates if at least minAgree of them sit
-// within AGREE_TOL of it. Locking on the first successful estimate meant a
-// single bad one stuck permanently, because nothing ever revisited it.
+// within AGREE_TOL of it. A lock is permanent until the formula changes, so it
+// has to be earned by agreement — one lucky bad estimate would stick for good.
 bool BpmClock::TryLock(int minAgree) {
     if (bpmHistCount_ < minAgree || bpmHistCount_ < 1) return false;
 
@@ -335,8 +334,8 @@ void BpmClock::RunEstimate(float rate) {
 
     // Accept the first local maximum that is both above an absolute floor and a
     // decent fraction of the strongest peak present, so the bar rises with how
-    // periodic the signal is instead of sitting at a fixed 0.2 where noise can
-    // clear it.
+    // periodic the signal actually is rather than sitting at a fixed level that
+    // noise can clear.
     float threshold = PEAK_FRAC * peak;
     if (threshold < PEAK_FLOOR) threshold = PEAK_FLOOR;
 
@@ -358,9 +357,9 @@ void BpmClock::RunEstimate(float rate) {
     if (rate > 0.0f) rawBpm /= rate;
 
     // Choose the metrical level nearest a typical tempo rather than folding
-    // blindly into the range, which accepted 41 and 199 BPM as readily as 120.
-    // Comparing max(r, 1/r) orders candidates the same way |log(r)| would, and
-    // costs no logarithm.
+    // blindly into the range, which would accept 41 and 199 BPM as readily as
+    // 120. Comparing max(r, 1/r) orders candidates the same way |log(r)| would,
+    // and costs no logarithm.
     static const float kOctaves[5] = {0.25f, 0.5f, 1.0f, 2.0f, 4.0f};
     float best = 0.0f;
     float bestScore = 1e30f;

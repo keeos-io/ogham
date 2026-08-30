@@ -43,19 +43,11 @@ static Controls controls;
 // function, so hardware decoding isn't available, and EXTI on a mechanical
 // encoder just floods the CPU with bounce). Polling only works if it outruns the
 // contacts: a 24 PPR encoder is 96 quadrature transitions per revolution, so a
-// hard 6-8 rev/s crank puts out 576-768 transitions/s. Sampling that from the
-// 1kHz audio callback left barely one sample per transition -- transitions were
-// missed, and a missed transition is a lost detent, exactly at the speeds the
-// encoder ACCELERATION is designed for. 20kHz gives >26 samples per transition
-// even at a full crank. Costs ~0.25% CPU (two GPIO reads + a table lookup).
-// Falls back to the audio callback if the timer won't start.
-//
-// The rate was 20kHz by accident until 2026-08-10: the period was computed from
-// GetPClk2Freq(), but TIM5 is an APB1 timer and an APB timer's kernel clock is
-// twice PCLK (libDaisy's own GetTickFreq() returns GetPCLK1Freq()*2 for exactly
-// that reason), so a period asking for 10kHz delivered 20kHz. Measured 20.1kHz
-// on module 2. Now computed correctly and 20kHz chosen deliberately, since the
-// headroom turned out to be worth having.
+// hard 6-8 rev/s crank puts out 576-768 transitions/s. 20kHz gives >26 samples
+// per transition even at a full crank, and a missed transition is a lost detent
+// exactly at the speeds the encoder ACCELERATION is designed for. Costs ~0.25%
+// CPU (two GPIO reads + a table lookup). Falls back to the audio callback if the
+// timer won't start.
 static TimerHandle encTim;
 static bool encTimerRunning = false;
 static constexpr uint32_t ENC_SCAN_HZ = 20000;
@@ -73,7 +65,7 @@ static constexpr int      FW_VER_MINOR = 16;  // 0..99, shown as two digits (v1.
 static constexpr uint32_t FW_VERSION   = (uint32_t)FW_VER_MAJOR * 100u + FW_VER_MINOR; // 100 = v1.00
 
 // --- Persisted settings (QSPI). Bump SETTINGS_VERSION to invalidate old layouts. ---
-static constexpr uint32_t SETTINGS_VERSION = 16; // v16: V/oct rate-tracking + start offset
+static constexpr uint32_t SETTINGS_VERSION = 16; // v16: V/oct rate-tracking
 struct OghamSettings {
     uint32_t version;
     int out1Formula;
@@ -194,10 +186,10 @@ static uint8_t NextQuant(uint8_t cur, int dir) {
 static bool encWasPressed = false;
 static uint32_t encPressStart = 0;
 static bool encLongFired = false;
-static constexpr uint32_t LONG_PRESS_MS = 600;  // hold threshold to toggle delay mode
+static constexpr uint32_t LONG_PRESS_MS = 600;  // hold threshold to enter/exit the FX menu
 
 // Encoder acceleration: the faster you turn, the bigger the step (rapid travel
-// through formulas/delay); slow turns stay 1-per-detent for fine control.
+// through the formula bank); slow turns stay 1-per-detent for fine control.
 static uint32_t lastEncMs = 0;
 static constexpr uint32_t ENC_FAST_MS = 25;   // detent gap below this -> fastest
 static constexpr uint32_t ENC_MED_MS  = 50;
@@ -209,25 +201,25 @@ static constexpr int ENC_FAST_MULT = 8;
 static constexpr int ENC_MED_MULT  = 4;
 static constexpr int ENC_SLOW_MULT = 2;
 // Menu-navigation acceleration is deliberately GENTLER than the function
-// selector's 8/4/2. The menu is 20 fields, not 100 slots: at x8 a single fast
-// detent would cross 40% of the list and overshooting would be the norm. x3
-// still slams end-to-end in ~7 detents (and clamping makes those ends a
-// reliable landing spot), while anything slower than a brisk turn stays exactly
-// one field per detent so you can always land on the one you want.
+// selector's 8/4/2. The menu is FX_NUM_FIELDS long, not 100 slots: at x8 a
+// single fast detent would cross a third of the list and overshooting would be
+// the norm. x3 still slams end-to-end in ~8 detents (and clamping makes those
+// ends a reliable landing spot), while anything slower than a brisk turn stays
+// exactly one field per detent so you can always land on the one you want.
 static constexpr int ENC_MENU_FAST_MULT = 3;   // detent gap < ENC_FAST_MS
 static constexpr int ENC_MENU_MED_MULT  = 2;   // detent gap < ENC_MED_MS
 
 // --- POT_RATE calibration (raw ADC; pots non-linear from the 10k pull-down,
-//     daisy-uzd). Center-aware so 12 o'clock = 1x rate. Recalibrated 2026-07-28
-//     across the fleet (modules 1/2/4/5): 12 o'clock read 459/476/450/450 (mean
-//     459) and full-CW ~959; the old 0.371 center was a stale single-unit value
-//     that made noon play ~1.3x on every production module. ---
+//     daisy-uzd). Center-aware so 12 o'clock = 1x rate. Fleet calibration
+//     (modules 1/2/4/5): 12 o'clock reads 459/476/450/450 (mean 459), full-CW
+//     ~959. A single-unit centre value is not good enough here -- being 0.09 out
+//     puts noon at ~1.3x on every other module. ---
 static constexpr float RATE_POT_MIN    = 0.0f;
 static constexpr float RATE_POT_CENTER = 0.459f;   // fleet mean 12 o'clock
 static constexpr float RATE_POT_MAX    = 0.955f;   // fleet full-CW ~0.959, margin so all reach 4x
-// Raw-pot movement needed to re-roll CV Out's sample offset (daisy-*). ~100x
-// the measured ADC noise (~1e-4) so it never self-triggers while stationary,
-// but only ~2 degrees of a 300-degree throw, so a deliberate nudge always lands.
+// Raw-pot movement needed to re-roll CV Out's capture phase. ~100x the measured
+// ADC noise (~1e-4) so it never self-triggers while stationary, but only ~2
+// degrees of a 300-degree throw, so a deliberate nudge always lands.
 static constexpr float RATE_REROLL_DEADBAND = 0.008f;
 static float lastRerollPot = -1.0f;   // <0 = not yet adopted (see the use site)
 
@@ -273,17 +265,16 @@ static volatile bool extClockActive = false;
 static volatile float extClockRate = 1.0f;
 static volatile uint32_t lastClockEdgeUs = 0;
 static volatile uint32_t lastClockPeriodUs = 0;  // last median clock period (ISR -> main loop)
-// A beat-rate clock is 0.5 s at 120 BPM and 2.5 s at 24 BPM, so the old 2 s
-// ceiling would have tripped on every beat below ~30 BPM. 10 s leaves room for
-// that and for anyone who patches a slower division than the assumed quarter
-// note -- nothing enforces the convention, and a half-note or bar clock should
-// still track rather than being read as a dropout. It stays clear of the
-// ~17.9 s GetUs() wrap, beyond which a period cannot be measured at all.
+// A beat-rate clock is 0.5 s at 120 BPM and 2.5 s at 24 BPM, and nothing
+// enforces the one-pulse-per-beat convention -- a half-note or bar clock should
+// still track rather than read as a dropout. 10 s covers that while staying
+// clear of the ~17.9 s GetUs() wrap, beyond which a period cannot be measured
+// at all.
 static constexpr uint32_t EXT_CLOCK_TIMEOUT_US = 10000000;  // 10 seconds (ISR per-edge gap)
 // Adaptive revert-to-knob timeout: scale to the clock's own period so fast clocks
 // revert almost immediately when unplugged, while slow clocks keep a wide enough
 // window not to false-revert between their beats. (True instant detection would
-// need the jack's switch contact wired to a GPIO -- not on this board; see daisy-*.)
+// need the jack's switch contact wired to a GPIO -- not on this board.)
 static constexpr uint32_t EXT_CLOCK_TIMEOUT_PERIODS = 2;     // revert after ~2 missed beats
 static constexpr uint32_t EXT_CLOCK_TIMEOUT_MIN_MS  = 90;    // floor (ignore fast-clock jitter)
 static constexpr uint32_t EXT_CLOCK_TIMEOUT_MAX_MS  = 10000; // ceiling (slow bar clocks)
@@ -312,10 +303,7 @@ static constexpr float RATE_HOLD_EXIT_EPS = 0.02f;  // ~5 LSB of 255: pot move t
 //
 // The beat is the subdivision most modular clocks actually carry, and it puts
 // the useful tempo range in the middle of the timing window rather than at
-// either end: a quarter note spans 0.3 s at 200 BPM to 2.5 s at 24 BPM. The
-// original convention anchored 8 Hz to 1x -- sixteenths at the same 120 BPM
-// reference, hence a factor of 4 between them. The reference tempo has never
-// changed, only the subdivision the input is assumed to carry.
+// either end: a quarter note spans 0.3 s at 200 BPM to 2.5 s at 24 BPM.
 static constexpr float TEMPO_UNITY_BPM        = 120.0f;  // reference tempo
 static constexpr int   TEMPO_PULSES_PER_BEAT  = 1;       // one pulse per quarter
 static constexpr float TEMPO_UNITY_HZ
@@ -323,9 +311,10 @@ static constexpr float TEMPO_UNITY_HZ
 static constexpr float CLOCK_RATE_MAX     = 64.0f;    // clamp runaway at fast clocks
 static constexpr uint32_t MIN_CLOCK_PERIOD_US = 200;  // refractory: reject edges <200us apart
 
-// --- V/oct pitch (daisy-c5i): hard-sync the engine at f_pitch from the V/oct CV. ---
-// f_adc (0..~0.97) -> octaves -> f_pitch = base * 2^octaves. Nominal from the 10k/18k
-// divider (~0.1948 ADC-fraction per volt = per octave); CALIBRATE on hardware.
+// --- V/oct pitch (daisy-c5i): the CV scales the engine's PLAYBACK RATE. ---
+// f_adc (0..~0.97) -> octaves -> rate = VOCT_RATE_TUNE * 2^octaves. Nominal from
+// the 10k/18k divider (~0.1948 ADC-fraction per volt = per octave); CALIBRATE on
+// hardware.
 static constexpr float VOCT_ZERO_FRAC    = 0.001f;  // V/oct ADC fraction at 0V (~P001)
 static constexpr float VOCT_FRAC_PER_OCT = 0.1948f; // ADC fraction per octave (per 1V)
 // The codec runs slightly fast vs the assumed 48kHz: the A440 calibration found
@@ -351,7 +340,6 @@ static constexpr float VOCT_RATE_TUNE   = VOCT_BASE_HZ / VOCT_NATURAL_HZ;
 // Floor for the computed rate. The engine's own range bottoms out at 1/64, and
 // below that the formula crawls rather than plays.
 static constexpr float VOCT_RATE_MIN    = 1.0f / 64.0f;
-// Start offset resolution: the menu field counts 64-tick steps.
 
 // Median-3 period filter: rejects a single spurious/missed edge.
 static uint32_t clkP0 = 0, clkP1 = 0, clkP2 = 0;
@@ -384,9 +372,9 @@ static void AudioCallback(AudioHandle::InputBuffer in,
     g_cbPeriod = cyc0 - s_lastCbStart;
     s_lastCbStart = cyc0;
 
-    // Encoder scanning normally runs on TIM5 at 10kHz (daisy-szs). This 1kHz
-    // fallback only engages if that timer failed to start -- sampling from BOTH
-    // would double-count every detent.
+    // Encoder scanning normally runs on TIM5 (daisy-szs). This 1kHz fallback only
+    // engages if that timer failed to start -- sampling from BOTH would
+    // double-count every detent.
     if (!encTimerRunning) controls.SampleEncoder();
 
     pipeline.Process(engine, out, size);
@@ -400,14 +388,13 @@ static void AudioCallback(AudioHandle::InputBuffer in,
     const float* holdSamp1 = pipeline.GetHoldSampleBuffer();
     const float* holdSamp2 = pipeline.GetHoldSampleBuffer2();
     for (size_t i = 0; i < size; i++) {
-        // Envelope follower + BPM read the FULL-scale audio first (so ENV Out keeps
+        // Envelope follower + BPM read the FULL-scale audio first (so CV Out keeps
         // its range), then the audio jacks are attenuated below.
         cvOutput.ProcessSample(out[0][i], out[1][i], clean[i], clean2[i],
                                holdSamp1[i], holdSamp2[i], cap1[i], cap2[i]);
         bpmClock.ProcessSample(clean[i]);
-        // Interim gain fix (daisy-qqa): the analog stage runs ~2x hot (~19.4Vpp);
-        // halve the digital output to land at the ~10Vpp Eurorack level. Revert to
-        // 1.0 once the hardware gain is halved. ENV Out is unaffected (read above).
+        // Attenuate the audio jacks only (see AUDIO_OUT_LEVEL); CV Out and the
+        // BPM estimator were read above, at full scale.
         out[0][i] *= AUDIO_OUT_LEVEL;
         out[1][i] *= AUDIO_OUT_LEVEL;
     }
@@ -431,9 +418,9 @@ extern "C" void EXTI2_IRQHandler(void) {
 }
 
 // Clock EXTI (CLK_IN = PC12, EXTI line 12): the LM393/GateIn inversion makes an
-// external rising edge a FALLING edge on the pin. Timestamping the period in this
-// hardware ISR (instead of polling the main loop, which goes blind ~9ms during
-// each TM1637 write) gives stable audio-rate pitch tracking (daisy-... fix).
+// external rising edge a FALLING edge on the pin. The period is timestamped in
+// this hardware ISR rather than polled from the main loop, which goes blind for
+// ~9ms during each TM1637 write -- that jitter is audible as tempo wobble.
 extern "C" void EXTI15_10_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_12) == 0U) return;
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_12);
@@ -545,11 +532,11 @@ int main(void) {
     bpmClock.Init();
     bpmClock.RequestEstimate();
 
-    // --- Encoder scan timer (daisy-szs): TIM5 @ 10kHz ---
+    // --- Encoder scan timer (daisy-szs): TIM5 @ ENC_SCAN_HZ ---
     // Must follow controls.Init() (which configures the A/B pins and seeds the
     // decoder's previous state). TIM2 belongs to libDaisy's System clock; TIM5
     // is free on this board. If either call fails, encTimerRunning stays false
-    // and the audio callback keeps scanning at 1kHz as before.
+    // and the audio callback scans at 1kHz instead.
     {
         TimerHandle::Config cfg;
         cfg.periph     = TimerHandle::Config::Peripheral::TIM_5;
@@ -623,8 +610,8 @@ int main(void) {
     controls.PrimeSmoothing();
 
     // --- Factory reset: hold the Func encoder at power-on to restore defaults
-    //     (both voices on the first formula, delay 0). The encoder is already
-    //     debounced by the splash above. ---
+    //     (both voices on the first formula, default FX chain). The encoder is
+    //     already debounced by the splash above. ---
     if (controls.GetEncoderPressed()) {
         storage.RestoreDefaults();
     }
@@ -684,24 +671,20 @@ int main(void) {
     // audio init, so anything set earlier is overwritten.
     //
     // libDaisy gives TIM2-5 the LOWEST NVIC priority (0x0f, per/tim.cpp:293)
-    // while every DMA stream sits at 0 (sys/dma.c), so the audio callback
-    // blocked the encoder scan for its entire duration. Measured on module 2:
-    // at 19.7% load the scan held its full 20kHz with a worst gap of one
-    // period, but at 48.1% the effective rate collapsed to 11.2kHz, 9% of
-    // scans were delayed past 250us, and the worst gap was 549us. Starved that
-    // far, a brisk turn (>1.6 rev/s) crosses two quadrature states between
-    // scans; QDEC decodes an ambiguous transition as 0, so the movement is
-    // DISCARDED rather than deferred. The same brisk gesture decoded 21 detents
-    // at low load and 6 at high -- a 71% loss -- and left encSubAccum_ at -2,
-    // so the damage outlived the gesture.
+    // while every DMA stream sits at 0 (sys/dma.c), so without this the audio
+    // callback blocks the encoder scan for its entire duration -- at ~48% load
+    // the effective scan rate falls to ~11kHz. Starved that far, a brisk turn
+    // crosses two quadrature states between scans, and QDEC decodes an ambiguous
+    // transition as 0: the movement is DISCARDED rather than deferred, and the
+    // leftover sub-steps desync encSubAccum_ past the end of the gesture.
     //
-    // Audio still has effective precedence: this trades latency, not
-    // throughput. The scan ISR is ~50 cycles, so 20kHz of it costs ~0.25% of
-    // the core and the callback keeps ~50% slack -- it gets interrupted
-    // briefly, it cannot miss its deadline. Preempt priority cannot go below 0,
-    // so the SAI DMA streams move to 1 and TIM5 takes 0. Streams 0/1 are SAI1
-    // and 3/4 are SAI2 (libDaisy sai.cpp); all four are set so this holds
-    // whichever SAI the board brings up.
+    // Audio still has effective precedence: this trades latency, not throughput.
+    // The scan ISR is ~50 cycles, so 20kHz of it costs ~0.25% of the core and
+    // the callback keeps ~50% slack -- it gets interrupted briefly, it cannot
+    // miss its deadline. Preempt priority cannot go below 0, so the SAI DMA
+    // streams move to 1 and TIM5 takes 0. Streams 0/1 are SAI1 and 3/4 are SAI2
+    // (libDaisy sai.cpp); all four are set so this holds whichever SAI the board
+    // brings up.
     if (encTimerRunning) {
         static const IRQn_Type kSaiDmaIrqs[] = {
             DMA1_Stream0_IRQn, DMA1_Stream1_IRQn,
@@ -752,11 +735,10 @@ int main(void) {
                     fxEditing = false;
                 } else {
                     funcMode = FUNC_FX;
-                    // Re-enter on the field you left, NOT field 0: with 20 fields
-                    // and no wrap, re-navigating from the top every time to tweak
-                    // one parameter is the whole cost of the menu. RAM only --
-                    // fxField is zero-initialised, so a power cycle starts at 0
-                    // again. Deliberately not persisted.
+                    // fxField is left alone, so the menu re-enters on the field
+                    // you left rather than field 0 -- with no wrap, re-navigating
+                    // from the top to tweak one parameter is the whole cost of
+                    // the menu. RAM only, so a power cycle starts at 0 again.
                     fxEditing = false;   // but never resume mid-edit
                 }
             } else if (gShort) {
@@ -798,7 +780,7 @@ int main(void) {
                         g_fx.parallel = (enc > 0) ? 1 : 0;  // CW = parallel, CCW = serial
                         pipeline.SetFxChain(g_fx);
                     } else if (fxField == FX_FIELD_QUANT) {
-                        // Discrete cycle through {0,16,32,64,128}; engine setting.
+                        // Discrete cycle through NextQuant's list; engine setting.
                         g_fx.paramQuant = NextQuant(g_fx.paramQuant, enc);
                         engine.SetParamQuant(g_fx.paramQuant);
                     } else if (fxField == FX_FIELD_DRONE) {
@@ -818,8 +800,8 @@ int main(void) {
                         if (nv > 2) nv = 2;
                         g_fx.timbreCvRoute = (uint8_t)nv;
                     } else if (fxField == FX_FIELD_LPG) {
-                        // Internal LPG, consolidated on/off + decay (daisy-*): 0 =
-                        // off, 1..99 = on with that decay (2ms..20s exp curve).
+                        // Internal LPG, consolidated on/off + decay: 0 = off,
+                        // 1..99 = on with that decay (2ms..20s exp curve).
                         // Accelerates like a param; SetFxChain plucks it once on
                         // the 0->nonzero edge so the change is audible.
                         int nv = (int)g_fx.lpgDecay + delta;
@@ -837,7 +819,7 @@ int main(void) {
                         g_fx.cvSlewRise = (uint8_t)nv;
                     } else if (fxField == FX_FIELD_CVSLEWFALL) {
                         // CV Out slew, falling -- same mapping/behaviour as rise,
-                        // independent coefficient (daisy-*).
+                        // independent coefficient.
                         int nv = (int)g_fx.cvSlewFall + delta;
                         if (nv < 0) nv = 0;
                         if (nv > 99) nv = 99;
@@ -894,16 +876,9 @@ int main(void) {
             // the user TWISTING a knob, not by CV changing the value. GetPot()
             // reads ADC0/1 (pot alone), separate from GetCombinedA/B (pot+CV).
             // Movement is tracked as a *step* on the same 0-255 grid as the
-            // parameter, with the same sub-LSB hysteresis below.
-            //
-            // This used to be a flat 0.006 epsilon on the raw pot — about 1.5
-            // LSB — which was adequate while the parameter itself could only
-            // move in twos. Now that it moves in ones, a single-step nudge falls
-            // under that epsilon and never re-arms the flash, so a slow
-            // adjustment showed nothing between steps. Triggering on a step
-            // fixes that, and jitter below the hysteresis band still cannot hold
-            // the display on. Still read from the raw pot, so CV alone never
-            // re-arms the flash.
+            // parameter, with the same sub-LSB hysteresis below, so a
+            // single-step nudge during a slow adjustment still re-arms the
+            // flash while jitter under the band cannot hold the display on.
             static int32_t lastKnobStepA = -1, lastKnobStepB = -1;
 
             // How far past the committed value the continuous position must
@@ -921,18 +896,15 @@ int main(void) {
             bool flashOk = (System::GetNow() - bootMs) > PARAM_FLASH_GRACE_MS
                         && funcMode != FUNC_FX;
             // Sub-LSB hysteresis on the CONTINUOUS position, not a deadband on
-            // the rounded value.
+            // the rounded value. A deadband on the rounded value can only accept
+            // N±2 from N, which makes every other integer unreachable; comparing
+            // the unrounded position with a band under half an LSB keeps every
+            // integer reachable while still rejecting dither, since flipping
+            // back means recrossing a 0.5 LSB gap -- far more than the residual
+            // on a path already smoothed at SMOOTH_COEFF_CV.
             //
-            // The old test was `|a - curA| > 1` against the committed value, so
-            // from N only N±2 could ever be accepted: every odd value was
-            // unreachable and the control moved in twos. Comparing the unrounded
-            // position instead, with a band under half an LSB, keeps every
-            // integer reachable while still rejecting dither — to flip back the
-            // input has to recross a 0.5 LSB gap, far more than the residual on
-            // a path already smoothed at SMOOTH_COEFF_CV.
-            //
-            // The endpoint latch stays: the ADC may not quite reach the rails,
-            // so 0 and 255 are forced through to keep the full range available.
+            // Endpoint latch: the ADC may not quite reach the rails, so 0 and
+            // 255 are forced through to keep the full range available.
             int32_t curA = engine.GetParamA();
             float   dA   = scaledA - (float)curA;
             bool endA = (a != curA) && (a == 0 || a == 255);
@@ -997,23 +969,20 @@ int main(void) {
                                     RATE_POT_MIN, RATE_POT_CENTER, RATE_POT_MAX);
         float knobRate = Controls::MapKnobToRate(rateKnob);
 
-        // Re-roll CV Out's sample offset whenever the Rate knob actually moves
-        // (daisy-*). Which offset the Hold stage sits on decides how the capture
-        // lines up with the formula's own periodicity, which changes how VARIED
-        // the resulting LFO is far more than it changes its level -- and there's
-        // no way to pick a good one in advance. Tying a re-roll to the knob makes
-        // finding a good one a gesture: nudge Rate, get a different character,
-        // and it then holds still until you nudge again.
+        // Re-roll CV Out's capture phase whenever the Rate knob actually moves.
+        // Which phase the Hold stage sits on decides how the capture lines up
+        // with the formula's own periodicity, which changes how VARIED the
+        // resulting LFO is far more than it changes its level -- and there is no
+        // way to pick a good one in advance. Tying a re-roll to the knob makes
+        // finding one a gesture: nudge Rate, get a different character, and it
+        // then holds still until you nudge again.
         //
         // Keyed off the RAW pot, not the derived rate, so it still re-rolls in
-        // clocked mode (where the knob quantises to x/div steps and small moves
-        // wouldn't change the rate at all). The deadband is ~100x the measured
-        // ADC noise (~1e-4) but still only ~2 degrees of a 300-degree throw, so
-        // it can't self-trigger while stationary yet a small deliberate nudge
-        // always lands.
+        // clocked mode, where the knob quantises to x/div steps and small moves
+        // would not change the rate at all.
         if (lastRerollPot < 0.0f) {
             // First control pass: adopt the knob position WITHOUT rolling, so a
-            // power cycle comes back on the built-in offset and a saved patch
+            // power cycle comes back on the built-in phase and a saved patch
             // sounds the same as you left it. The first nudge randomises.
             lastRerollPot = rawRatePot;
         } else if (fabsf(rawRatePot - lastRerollPot) > RATE_REROLL_DEADBAND) {
@@ -1031,17 +1000,14 @@ int main(void) {
             // A component of period P ticks played at R ticks/s sounds at R/P Hz,
             // so an exponential R tracks 1V/oct exactly — and every partial
             // scales with it, so this is varispeed transposition with the
-            // waveform shape preserved. The formula runs out normally, which is
-            // what the old hard-sync could not do: restarting t every cycle
-            // confined it to t = 0..baseSR/f, and a third of the bank does
-            // nothing in that window (see tools/voct_range.cpp).
+            // waveform shape preserved, and the formula still runs out normally.
             //
-            // Formulas with a stable periodicity therefore play melodically;
-            // the rest become an exponential speed control, which is still
-            // useful. Pitch and evolution rate are no longer independent — a low
-            // note evolves slowly — and Sync In is the answer to that: driven
-            // from an oscillator on the same CV, the window R/F_sync is constant
-            // across pitch, so the timbre holds still while the pitch tracks.
+            // Formulas with a stable periodicity therefore play melodically; the
+            // rest become an exponential speed control, which is still useful.
+            // Pitch and evolution rate are not independent — a low note evolves
+            // slowly — and Sync In is the answer to that: driven from an
+            // oscillator on the same CV, the window R/F_sync is constant across
+            // pitch, so the timbre holds still while the pitch tracks.
             //
             // Rate knob = bipolar FINE TUNE, +-12 semitones, 12 o'clock = 0.
             // Continuous rather than quantized, so Ogham can be tuned against
@@ -1114,11 +1080,12 @@ int main(void) {
         // --- External clock: edges are timed in the EXTI ISR (above). Here we
         //     only time out when edges stop, reverting to the Rate knob. ---
         // Measure the timeout on the MONOTONIC ms clock (GetNow, wraps ~49 days),
-        // NOT GetUs: GetUs wraps every ~17.9s, and when the last edge landed in the
-        // top ~2M us of that cycle the signed-diff timeout stayed <2e6-or-negative
-        // forever -> extClockActive stuck true after the cable was pulled (the tempo
-        // was "remembered"). Instead we watch the ISR's lastClockEdgeUs: while it
-        // keeps changing, clock is present; once it stops, count ms since and revert.
+        // NOT GetUs -- GetUs wraps every ~17.9s, well inside the timeout, and a
+        // last edge landing near the top of that cycle would leave the diff
+        // permanently under the threshold, so extClockActive would stick true
+        // after the cable was pulled. Instead we watch the ISR's lastClockEdgeUs:
+        // while it keeps changing, clock is present; once it stops, count ms
+        // since and revert.
         uint32_t edgeUs = lastClockEdgeUs;   // atomic 32-bit snapshot of the ISR value
         if (edgeUs != lastSeenEdgeUs) {
             lastSeenEdgeUs = edgeUs;
@@ -1144,17 +1111,14 @@ int main(void) {
         // --- BPM: re-estimate when formula or A/B changes ---
         {
             int idx = engine.GetFormula1Index();
-            // Re-estimate on a formula change only.
-            //
-            // A and B used to retrigger too, on a change of more than 3, but
-            // they are continuous timbre controls: a knob sweep or any CV on
-            // their inputs resets the estimator faster than it can lock (it
-            // needs ~3 s, and a 2 count/s drift crosses a threshold of 3 every
-            // ~2 s), so it never settles. The formula is the discrete event that
+            // Re-estimate on a formula change ONLY. A and B are continuous
+            // timbre controls: a knob sweep or any CV on their inputs would
+            // reset the estimator faster than it can lock (it needs ~3 s), so it
+            // would never settle. The formula is the discrete event that
             // genuinely replaces the pattern.
             //
-            // EOC does not go quiet in the meantime: Update() keeps applying the
-            // last baseBpm_ regardless of the lock, so the output holds the
+            // The gate output does not go quiet in the meantime: Update() keeps
+            // applying the last baseBpm_ regardless of the lock, so it holds the
             // previous estimate until a new one is adopted.
             if (idx != prevFormulaIdx) {
                 prevFormulaIdx = idx;

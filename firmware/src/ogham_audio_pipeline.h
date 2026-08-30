@@ -37,13 +37,11 @@ struct FxChainConfig {
     uint8_t out2Drone;  // Out2 decouple/drone (daisy-pcq): 1 = frozen independent voice
     uint8_t cvOutMode;  // CV-out mode (daisy-0pq): 0 = env follower, 1 = DC Out1, 2 = DC Out2
     uint8_t timbreCvRoute; // CV->Timbre routing (daisy-gtw): 0 = normal, 1 = CV A, 2 = CV B
-    // Internal LPG (daisy-nmr), on/off + decay consolidated into one field
-    // (daisy-*): 0 = off (bypassed), 1..99 = on (Sync in plucks it) with that
-    // decay, exp-mapped 2ms..20s (see LPG_DECAY_MIN/MID/MAX_S) -- the same
-    // curve as when this was two fields, just shifted so 0 means off instead
-    // of a 2ms decay.
+    // Internal LPG (daisy-nmr), on/off + decay in one field: 0 = off
+    // (bypassed), 1..99 = on (Sync in plucks it) with that decay, exp-mapped
+    // 2ms..20s (see LPG_DECAY_MIN/MID/MAX_S).
     uint8_t lpgDecay;
-    // CV Out slew + hold (daisy-*): a sample-and-hold decimation stage (cvHold,
+    // CV Out slew + hold: a sample-and-hold decimation stage (cvHold,
     // DC modes only, capturing on an odd PHASE of each window) followed by a
     // one-pole smoother (cvSlewRise/cvSlewFall, all CV Out modes -- the last
     // stage before the DAC regardless of mode). A very slow Rate plus slew/hold
@@ -54,11 +52,8 @@ struct FxChainConfig {
     uint8_t cvSlewRise; // 0 = off (instant)
     uint8_t cvSlewFall; // same mapping, applied when the target is below the current output
     uint8_t cvHold;     // 0 = off (every tick); else a power-of-2 hold window, 2..256; DC modes only
-    // Was the V/oct start offset (menu field 22), withdrawn 2026-08-11 -- the
-    // silent-opening problem it addressed is documented in the manual instead,
-    // where it costs no menu field and no flash. Kept as a reserved byte so the
-    // persisted layout is unchanged: removing it would bump SETTINGS_VERSION and
-    // wipe everyone's settings to take a feature away.
+    // Spare byte, held so the persisted layout stays fixed. Removing it would
+    // bump SETTINGS_VERSION and wipe every stored patch.
     uint8_t reserved0;
 };
 // FX menu fields, in menu order: [0] global on/off, [1] chain toggle,
@@ -98,7 +93,7 @@ public:
 
     // Bipolar lo-fi macro from a 0..1 pot reading.
     //   center (12 o'clock) = clean; CCW = LPF -> drive/wavefold/sat;
-    //   CW = HPF -> sample-rate reduction/sat.
+    //   CW = sample-rate reduction + sat/overdrive + resonant band-pass sweep.
     void SetLofiMacro(float pot);
 
     // True when the lo-fi macro is in its clean center deadzone (no processing).
@@ -123,8 +118,8 @@ public:
     const float* GetCleanBuffer() const { return cleanBuffer_; }
     const float* GetCleanBuffer2() const { return cleanBuffer2_; }
 
-    // Per-sample "CV Out Hold should capture now" flags (daisy-*), mirroring
-    // the clean buffers above. ALREADY DECIMATED -- true only where t hits the
+    // Per-sample "CV Out Hold should capture now" flags, mirroring the clean
+    // buffers above. ALREADY DECIMATED -- true only where t hits the
     // offset phase of the window. The window lives in this class because that
     // phase is anchored to the engine's t; CvOutput just consumes the flag, so
     // there is one authority on capture timing. Buffered per-sample because
@@ -133,43 +128,37 @@ public:
     const bool* GetCvCaptureBuffer() const { return cvCaptureBuffer_; }
     const bool* GetCvCaptureBuffer2() const { return cvCaptureBuffer2_; }
 
-    // Per-sample value for CV Out's Hold stage to capture, -1..1 (daisy-*).
-    // NOT the clean buffers above -- those are linearly interpolated toward
-    // the next t, so at the instant a tick lands they're still near the
-    // PREVIOUS value. This carries either:
-    //   - the engine's raw (un-interpolated) value at t, or
-    // the engine's fresh un-interpolated value at the captured t (the capture
-    // phase is offset, so this is not the degenerate t == 0 phase).
+    // Per-sample value for CV Out's Hold stage to capture, -1..1: the engine's
+    // raw, un-interpolated value at the captured t. NOT the clean buffers above
+    // -- those are linearly interpolated toward the next t, so at the instant a
+    // tick lands they are still near the PREVIOUS value.
     const float* GetHoldSampleBuffer() const { return holdSampleBuffer_; }
     const float* GetHoldSampleBuffer2() const { return holdSampleBuffer2_; }
 
-    // Pick a new random ODD capture phase for CV Out's Hold stage (daisy-*).
-    // Call when the Rate knob moves: it then stays put until the knob moves
-    // again, so nudging Rate re-rolls the LFO's character even if you land back
-    // on the same frequency.
+    // Pick a new random ODD capture phase for CV Out's Hold stage. Call when
+    // the Rate knob moves: it then stays put until the knob moves again, so
+    // nudging Rate re-rolls the LFO's character even if you land back on the
+    // same frequency.
     //
-    // This selects WHICH PHASE of each hold window the capture lands on. It is
-    // NOT a look-ahead, so it costs no latency at any value and the CV stays
-    // aligned with the audio. (It was a look-ahead once, which put the CV up to
-    // a whole window ahead of the audio -- 2 s at the slowest Rate.)
+    // This selects WHICH PHASE of each hold window the capture lands on, and is
+    // NOT a look-ahead -- it costs no latency at any value and the CV stays
+    // aligned with the audio. Which phase you sit on decides how the capture
+    // lines up with the formula's own periodicity, and that changes how VARIED
+    // the CV is far more than it changes its level, with no way to pick well in
+    // advance -- hence a re-roll gesture rather than a tuned constant.
     //
-    // Which phase you sit on decides how the capture lines up with the
-    // formula's own periodicity, and that changes how VARIED the CV is far more
-    // than it changes its level, with no way to pick well in advance -- hence a
-    // re-roll gesture rather than a tuned constant.
-    //
-    // Odd: a phase's factors of two divide the reachable output values
+    // Odd, because a phase's factors of two divide the reachable output values
     // (256 >> v2) and phase 0 is the degenerate case that collapses the capture
-    // to a constant. Measured over random formula/A/B/phase draws, odd gives a
-    // flat CV 3.1% of the time (vs 27% for the phase-0 bug this replaced);
-    // curating to the best-measuring phases only reached 2.75%, not worth a
-    // table when a dull roll is one nudge from being replaced.
+    // to a constant. Measured over random formula/A/B/phase draws, odd leaves
+    // the CV flat 3.1% of the time; curating to the best-measuring phases only
+    // reached 2.75%, not worth a table when a dull roll is one nudge from being
+    // replaced.
     //
     // `entropy` should be unpredictable at the moment of the call (the
     // microsecond timer); it is mixed into the generator state.
     void RerollCvSampleOffset(uint32_t entropy);
 
-    // Capture interval in 48 kHz output samples, per voice (daisy-*). CvOutput
+    // Capture interval in 48 kHz output samples, per voice. CvOutput
     // scales its DC-mode slew against this instead of against absolute seconds,
     // which is what makes the LFO depth independent of the Rate knob. Refreshed
     // every block from the engine's phase increment.
@@ -185,8 +174,8 @@ private:
     float holdSampleBuffer_[MAX_BLOCK_SIZE] = {};
     float holdSampleBuffer2_[MAX_BLOCK_SIZE] = {};
     // Current ODD capture phase, re-rolled by RerollCvSampleOffset() whenever
-    // the Rate knob moves. Starts at a known-good fixed value so behaviour is
-    // deterministic until the user first touches the knob.
+    // the Rate knob moves. Starts at a fixed value so behaviour is deterministic
+    // until the knob is first touched.
     int32_t  cvSampleOffset_ = 7;
     uint32_t cvRngState_ = 0x9E3779B9u;   // xorshift32; entropy mixed in per roll
     // CV Out Hold window, owned here because the capture phase is anchored to

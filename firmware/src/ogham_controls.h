@@ -54,8 +54,8 @@ public:
     bool GetEncoderPressed() const { return encoderPressed_; }
     bool GetEncoderRisingEdge() const { return encoderRising_; }
 
-    // Sample the rotary A/B quadrature and accumulate detents. Call from the 1kHz
-    // audio callback (a steady DMA interrupt) so encoder steps are never dropped
+    // Sample the rotary A/B quadrature and accumulate detents. Called from a
+    // timer ISR (TIM5, see ogham_main.cpp) so encoder steps are never dropped
     // during the blocking ~9ms TM1637 display writes that stall the main loop.
     void SampleEncoder();
 
@@ -101,8 +101,8 @@ private:
     bool encoderRising_ = false;
     bool lastEncoderPressed_ = false;
 
-    // Rotary A/B decoded in the audio-callback ISR (miss-proof vs the display
-    // blocking). Full-quadrature state machine: 4 sub-steps = 1 detent.
+    // Rotary A/B decoded in the scan ISR (miss-proof vs the display blocking).
+    // Full-quadrature state machine: 4 sub-steps = 1 detent.
     daisy::GPIO      encA_, encB_;   // direct pin reads for the ISR decoder
     volatile int32_t encDelta_ = 0;  // detents accumulated by the ISR, drained by Process()
     int8_t           encSubAccum_ = 0;
@@ -127,16 +127,13 @@ private:
     //   At -5V CV, pot=0V: adc = 1.0 (clamped at 3.3V rail)
     //
     // To recover a 0-1 parameter value: invert and normalize.
-    // Combined-channel zero-offset (ADC at 0V CV + pot CCW), measured per channel
-    // on this board via the monitor (2026-06-25). Was 0.758 assumed.
+    //
     // ADC4/5 read the MCP6004 sum of pot and CV, inverted: adc = OFFSET - GAIN*pot
-    // with no CV patched. Measured over a full sweep on 2026-08-11 (236 samples,
-    // fit residual < 0.006, i.e. linear):
+    // with no CV patched. Both channels are measured, not assumed -- a nominal
+    // 0.758 offset is about 1% out and shows up as a scale error between A and B.
+    // Fitted over a full sweep (236 samples, residual < 0.006, i.e. linear):
     //
     //     A:  adc = 0.7501 - 0.9990 * pot      B:  adc = 0.7499 - 0.9984 * pot
-    //
-    // A's offset had been 0.7431, about 1% low, so channel A carried a small
-    // scale error against B. Both now measured.
     static constexpr float CV_ZERO_OFFSET_A = 0.7501f;
     static constexpr float CV_ZERO_OFFSET_B = 0.7499f;
 

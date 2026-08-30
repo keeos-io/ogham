@@ -39,12 +39,11 @@ public:
     bool TChanged2() const { return out2Decoupled_ ? tChanged2_ : tChanged_; }
 
     // How many whole t-steps this ONE Process() sample crossed (0 if none).
-    // Normally 0 or 1, but above Rate ~6x on an 8kHz formula (and at almost
-    // any Rate on a 44.1kHz one) the phase increment exceeds one t-step per
-    // output sample and t jumps several at once. Anything counting ticks must
-    // use THIS, not TChanged() -- a bool saturates at one per sample, which
-    // made CV Out's hold window stop shrinking past Rate ~6x and pinned the
-    // LFO frequency (daisy-*).
+    // Normally 0 or 1, but above Rate ~6x on an 8kHz formula (and at almost any
+    // Rate on a 44.1kHz one) the phase increment exceeds one t-step per output
+    // sample and t jumps several at once. Anything counting ticks must use THIS,
+    // not TChanged(): a bool saturates at one per sample, which caps any
+    // tick-derived interval (CV Out's hold window, and so its LFO frequency).
     uint32_t GetTStep() const { return tStep_; }
     uint32_t GetTStep2() const { return out2Decoupled_ ? tStep2_ : tStep_; }
     // Raw (un-interpolated) 0-255 sample, the formula's actual value at t --
@@ -90,17 +89,11 @@ public:
     void SetRate(float rate);
     float GetRate() const { return rateMultiplier_; }
 
-    // V/oct pitch (daisy-c5i): internally hard-sync the master phase to freqHz so
-    // the output is periodic at freqHz -> a clean tuned tone (the Rate knob then
-    // sets timbre: how far t advances per cycle). 0 = disabled (Clock/normal mode).
+    // Internal hard sync: restart the master phase at freqHz, so the output is
+    // periodic at freqHz. 0 = disabled, which is what every mode currently
+    // selects -- V/oct tracks the playback rate instead (see ogham_main.cpp), so
+    // the formula runs out normally rather than being confined to t = 0..sr/f.
     void SetPitchSync(float freqHz);
-
-    // Where `t` restarts from on a sync reset, instead of 0.
-    //
-    // Bytebeat formulas commonly open with a long constant run — a sweep or a
-    // riser does nothing for hundreds or thousands of ticks — so a sync window
-    // anchored at 0 can loop a stretch that never leaves silence. The offset
-    // chooses which part of the formula the window lands on.
 
     // Out2 decouple / drone (daisy-pcq). When enabled, Out2 FORKS off the master:
     // on the coupled->decoupled edge it snapshots the current phase, rate and A/B,

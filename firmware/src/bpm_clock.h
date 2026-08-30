@@ -44,11 +44,10 @@ private:
     //
     // FFT_SIZE must be >= DECIM_FACTOR or the analysis misses audio: frames are
     // taken every DECIM_FACTOR samples and each covers only the FFT_SIZE samples
-    // behind the boundary. At 256/480 that left a 224-sample hole in every 480,
-    // so 47% of the signal never reached the onset detector — and which onsets
-    // fell in the hole depended on the formula's phase against the decimation
-    // grid, making it unstable as well as lossy. 512 covers 480 with a little
-    // overlap.
+    // behind the boundary, so a shortfall is a hole the onset detector never
+    // sees — and which onsets fall in it depends on the formula's phase against
+    // the decimation grid, making it unstable as well as lossy. 512 covers 480
+    // with a little overlap.
     static constexpr int FFT_SIZE = 512;
     static constexpr int AUDIO_BUF_SIZE = 4096;  // Power of 2 for masking
     static constexpr int NUM_MAG_BINS = FFT_SIZE / 2 - 1;
@@ -83,36 +82,26 @@ private:
     static constexpr float TEMPO_MIN = 40.0f;
     static constexpr float TEMPO_MAX = 200.0f;
 
-    // Every member carries a default initialiser.
-    //
-    // The class follows the libDaisy convention of Init() rather than a
-    // constructor, and Init() does not touch fftBuffer_, fluxLin_, corr_ or
-    // bpmHist_ -- they are written before they are read in normal operation.
-    // On the module that is harmless: the instance is a file-scope static, so
-    // the loader zeroes it. Off the module it is not. The VCV Rack port makes
-    // it a member of a heap-allocated Module, where those four arrays start as
-    // whatever was in that memory, and bpmHist_ is the estimator's agreement
-    // history -- so a fresh instance could lock to a tempo derived from
-    // nothing, differently each time. It was found there by a multi-instance
-    // test that looked, wrongly, like instances sharing state.
+    // Every member carries a default initialiser. Init() deliberately leaves
+    // fftBuffer_, fluxLin_, corr_ and bpmHist_ alone -- they are written before
+    // they are read in normal operation -- which is free on the module, where
+    // the instance is a file-scope static the loader zeroes. It is not free
+    // anywhere else: the VCV Rack port makes it a member of a heap-allocated
+    // Module, and bpmHist_ is the estimator's agreement history, so a fresh
+    // instance could lock to a tempo derived from nothing.
     //
     // Initialising here rather than at the call site makes the class correct
-    // wherever it is constructed instead of correct-if-the-caller-remembers,
-    // and there is no way to enforce the caller-side version at compile time:
-    // the guarantee needs "the default constructor is not user-provided", and
-    // C++11 has no trait for that.
-    //
-    // Costs nothing on the module. These are all constant expressions, so a
-    // file-scope static is still constant-initialised into .bss -- verified by
-    // the firmware's text/data/bss being byte-identical across this change.
+    // wherever it is constructed instead of correct-if-the-caller-remembers, and
+    // there is no way to enforce the caller-side version at compile time. Costs
+    // nothing on the module: these are all constant expressions, so the static
+    // instance is still constant-initialised into .bss.
 
     // Audio ring buffer (ISR writes, main reads).
     //
     // The main loop reads the FFT_SIZE samples behind frameWritePos_ while the
     // ISR keeps writing, so the margin before the ISR laps the region being read
-    // is (AUDIO_BUF_SIZE - FFT_SIZE) samples — 74ms at 4096/512. The main loop
-    // blocks for ~9ms on each TM1637 write, so the old 1024-sample buffer left
-    // only 16ms and could tear a frame.
+    // is (AUDIO_BUF_SIZE - FFT_SIZE) samples — 74ms at 4096/512. That has to
+    // cover the ~9ms the main loop blocks on each TM1637 write, or a frame tears.
     float audioBuffer_[AUDIO_BUF_SIZE] = {};
     volatile int audioWritePos_ = 0;
     volatile int frameWritePos_ = 0;  // Snapshot at decimation boundary
@@ -122,8 +111,8 @@ private:
     volatile bool frameReady_ = false;
 
     // Analysis window, built once (periodic Hann, the correct one for overlap
-    // analysis). Computing this with cosf per sample per frame cost 25,600
-    // transcendental calls a second for a constant.
+    // analysis). Rebuilding it per frame would be 25,600 cosf calls a second for
+    // a constant.
     float window_[FFT_SIZE] = {};
 
     // FFT working buffer: FFT_SIZE complex values, interleaved [re, im, ...]
@@ -140,8 +129,8 @@ private:
 
     // Flux unwrapped into linear order, mean already removed, so the
     // correlation's inner loop is a plain dot product. Indexing the ring
-    // directly cost two hardware divides per iteration — about 113,000 UDIV per
-    // estimate for work whose arithmetic is one multiply-accumulate.
+    // directly would cost two hardware divides per iteration — about 113,000
+    // UDIV per estimate — for work whose arithmetic is one multiply-accumulate.
     float fluxLin_[FLUX_BUF_SIZE] = {};
     float corr_[MAX_LAGS] = {};
 

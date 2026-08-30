@@ -21,8 +21,8 @@
 // The display auto-selects whichever pot you move:
 //   A nnn = Param A pot        (linear; no special centre)
 //   b nnn = Param B pot        (linear; no special centre)
-//   r nnn = Rate / Fine pot    (firmware RATE_POT_CENTER = 371, min ~0, max ~881)
-//   t nnn = Tone pot           (firmware LOFI_CENTER = 446, full CW POT_MAX ~960)
+//   r nnn = Rate / Fine pot    (firmware RATE_POT_CENTER = 459, min ~0, max ~955)
+//   t nnn = Tone pot           (firmware LOFI_CENTER = 458, full CW POT_MAX ~960)
 //
 // Encoder CLICK cycles the VIEW (peak-hold), shown by the decimal point:
 //   LIVE  -> no dot        current position (park at 12 o'clock to read centre)

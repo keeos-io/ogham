@@ -25,14 +25,13 @@
 // itself, and can hold slow/DC values the AC-coupled audio outs cannot.
 //
 // Hold (DC modes only) feeds a decimation stage before Slew, capturing on an
-// odd phase of each window rather than on its degenerate zero phase;
-// Slew (daisy-*) is the LAST stage before the DAC regardless of mode, so it
-// shapes whichever output is selected -- an envelope follower or a held/raw
-// DC voltage. Run the engine at LFO-rate (see Controls::MapKnobToRate) with
-// Hold+Slew on the DC modes for anything from a classic stepped S&H voltage
-// to a smoothly gliding LFO, or turn Slew up on an envelope-follower mode to
-// soften its output. Both default to off (bit-exact passthrough, matching
-// pre-daisy-* behaviour).
+// odd phase of each window rather than on its degenerate zero phase; Slew is the
+// LAST stage before the DAC regardless of mode, so it shapes whichever output is
+// selected -- an envelope follower or a held/raw DC voltage. Run the engine at
+// LFO-rate (see Controls::MapKnobToRate) with Hold+Slew on the DC modes for
+// anything from a classic stepped S&H voltage to a smoothly gliding LFO, or turn
+// Slew up on an envelope-follower mode to soften its output. Both default to off
+// (bit-exact passthrough).
 class CvOutput {
 public:
     enum class Mode : uint8_t { EnvOut1 = 0, EnvOut2 = 1, DcOut1 = 2, DcOut2 = 3 };
@@ -40,24 +39,17 @@ public:
     void Init(daisy::DacHandle* dac);
     void SetMode(Mode m) { mode_ = m; }
 
-    // CV Out slew, shared by every mode (daisy-*): one-pole smoothing on
-    // whatever's currently selected, applied asymmetrically depending on
-    // whether the target is above (Rise) or below (Fall) the current output --
-    // so e.g. a fast pluck-like rise can pair with a slow decaying fall.
-    // 0 = off (instant).
+    // CV Out slew, shared by every mode: one-pole smoothing on whatever's
+    // currently selected, applied asymmetrically depending on whether the target
+    // is above (Rise) or below (Fall) the current output -- so e.g. a fast
+    // pluck-like rise can pair with a slow decaying fall. 0 = off (instant).
     //
     // ONE mapping for every mode: a plain absolute time constant,
     // CV_SLEW_MIN_S..CV_SLEW_MAX_S. A given Slew setting takes the same
     // wall-clock time to move whatever the engine, the Rate knob or the hold
     // window are doing -- which is the whole point of a slew limiter and what
-    // makes it dial-in-able.
-    //
-    // (An earlier version scaled tau to the capture interval for the DC modes,
-    // to hold modulation depth constant across Rate. It did that, but it also
-    // made the rise/fall time change with playback speed -- at high Rate tau
-    // fell to a fraction of a millisecond and the slew stopped doing anything
-    // perceptible. Depth is now handled where it belongs, by the make-up gain
-    // below, which no longer requires tau to be anything in particular.)
+    // makes it dial-in-able. Modulation depth is not tau's job; it is restored
+    // by the make-up gain below.
     void SetSlewRise(uint8_t v);
     void SetSlewFall(uint8_t v);
 
@@ -74,20 +66,20 @@ public:
     // capture flag (GetCvCaptureBuffer). That's deliberate -- the capture phase
     // is anchored to the engine's t, so the pipeline is the only place that can
     // decide when a capture happens. One authority, and no phase drift.
-    // (Two filters were tried before this and dropped -- a full-window boxcar
-    // average and a 16-tap Gaussian in t. Both were linear low-passes on a
-    // near-white sequence, so both only shrank the output.)
+    //
+    // Decimation, not averaging: a boxcar or Gaussian over the window is a
+    // linear low-pass on a near-white sequence, so it only shrinks the output.
     void SetHold(uint8_t v);
 
     // Process one audio sample (called from the audio ISR, 48 kHz). out1Proc/
     // out2Proc feed the two envelope followers; raw1/raw2 are the pre-Lo-Fi
     // voices (linearly interpolated) for DC modes when Hold is off;
-    // holdSamp1/holdSamp2 are what Hold captures (daisy-*) --
-    // AudioPipeline::GetHoldSampleBuffer, either the fresh un-interpolated
-    // formula value at the captured (offset-phase) t, since the
-    // interpolated stream is still close to the previous value right when a
-    // tick lands. cap1/cap2 are AudioPipeline::GetCvCaptureBuffer: true on the
-    // samples Hold should latch a new value (already decimated by the window).
+    // holdSamp1/holdSamp2 are what Hold captures (AudioPipeline::
+    // GetHoldSampleBuffer): the fresh un-interpolated formula value at the
+    // captured t, since the interpolated stream is still close to the previous
+    // value right when a tick lands. cap1/cap2 are AudioPipeline::
+    // GetCvCaptureBuffer: true on the samples Hold should latch a new value
+    // (already decimated by the window).
     void ProcessSample(float out1Proc, float out2Proc, float raw1, float raw2,
                        float holdSamp1, float holdSamp2, bool cap1, bool cap2);
 
@@ -106,20 +98,20 @@ private:
     float env_   = 0.0f, env2_  = 0.0f;   // rectified A/R envelopes (0..~1)
     float envS_  = 0.0f, env2S_ = 0.0f;   // post-smoothed envelopes (output)
 
-    // DC-mode Hold (daisy-*), one held value per voice so switching
+    // DC-mode Hold, one held value per voice so switching
     // DcOut1 <-> DcOut2 is instant (both always run, like the env followers
     // above). The window and its tick counter live in AudioPipeline; all this
     // keeps is whether Hold is engaged and the currently-held value.
     bool  holdOn_   = false;
     float heldRaw1_ = 0.0f, heldRaw2_ = 0.0f;  // held raw output (-1..1)
 
-    // Shared Slew (daisy-*): ONE stage, applied in ProcessSample() to whichever
+    // Shared Slew: ONE stage, applied in ProcessSample() to whichever
     // signal `mode_` currently selects (already scaled to the 0..1 DAC-drive
     // range), so it's the same physical filter regardless of mode -- switching
     // modes with Slew turned up glides to the new mode's value instead of
     // clicking, the same as any other change while it's engaged. Independent
-    // rise/fall coefficients (daisy-*): whichever applies is picked each
-    // sample by the sign of (target - slewOut_).
+    // rise/fall coefficients: whichever applies is picked each sample by the
+    // sign of (target - slewOut_).
     // Absolute-time coefficients, shared by every mode. 1.0 = off (instant).
     float slewCoeffRise_ = 1.0f;
     float slewCoeffFall_ = 1.0f;
@@ -154,11 +146,10 @@ private:
     // Measured: the theoretical make-up over-corrects because captures retain
     // some correlation. 0.85 keeps median clipping at zero across all formulas.
     static constexpr float SLEW_MAKEUP_TRIM = 0.85f;
-    // 6.0: with the absolute term engaged the delivered pole sits close to 1
-    // (heavy smoothing of a fast signal), so there is a lot of lost amplitude
-    // to restore. Past roughly 6*K of smoothing no clamp really helps -- there
-    // is little modulation left to recover, and the output is legitimately a
-    // small, very smooth voltage.
+    // With a long tau the delivered pole sits close to 1 (heavy smoothing of a
+    // fast signal), so there is a lot of lost amplitude to restore. Past roughly
+    // 6*K of smoothing no clamp really helps -- there is little modulation left
+    // to recover, and the output is legitimately a small, very smooth voltage.
     static constexpr float SLEW_MAKEUP_MAX  = 6.0f;
     // The centre the make-up gain expands about. Must stay well SLOWER than the
     // slew (it is targeted at 8*tau) or it re-injects the motion the slew just

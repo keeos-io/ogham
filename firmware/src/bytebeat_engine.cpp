@@ -48,8 +48,8 @@ static inline float SamplesPerTickFrom(uint64_t inc) {
     if (inc == 0) return 1.0e6f;                 // stopped: treat as very slow
     float s = (float)((double)((uint64_t)1 << 32) / (double)inc);
     // Deliberately NOT floored at 1: above Rate ~6x there really is more than
-    // one t-step per output sample, and clamping here is what pinned the CV
-    // hold window (and so the LFO frequency) past that point.
+    // one t-step per output sample, and flooring here would cap every
+    // tick-derived interval (CV Out's hold window, and so its LFO frequency).
     if (s < 1.0e-3f) s = 1.0e-3f;
     if (s > 1.0e6f)  s = 1.0e6f;
     return s;
@@ -116,8 +116,7 @@ void BytebeatEngine::SetFormula1(int index) {
     // about a minute (tools/formula_life.cpp).
     //
     // Requesting the reset rather than doing it here means Process() performs it
-    // on the audio thread through the same path Sync uses, including honouring
-    // the start offset.
+    // on the audio thread, through the same path a Sync edge uses.
     if (changed) syncPending_ = true;
 }
 

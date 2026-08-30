@@ -24,25 +24,24 @@ LofiConfig g_lofiConfig = {
     2.9f,         // bpQStart  (a touch resonant)
     6.9f,         // bpQEnd    (narrow/resonant)
     0.78f,        // bpMixMax  (wet blend at full CW)
-    1.3f,         // sweepCurve (>1 back-loads the band-pass sweep so most of the cutoff+mix
-                  //             change lands in the upper throw; was 0.40 = front-loaded/maxed by ~4 o'clock)
+    1.3f,         // sweepCurve (>1 back-loads the band-pass sweep so most of the
+                  //             cutoff+mix change lands in the upper throw)
 };
 
 // Lo-fi macro tuning
 namespace {
-    // Measured 12-o'clock ADC value for POT_LEVEL (recalibrated 2026-07-23 via
-    // read_once.py at true noon; the old 0.3518 sat ~11:30, triggering clean early).
-    // Pots are non-linear (10k pull-down, daisy-uzd). Re-measure if pull-down changes.
-    constexpr float LOFI_CENTER   = 0.458f;  // fleet mean 12 o'clock (modules 1/2/4/5: 448/473/445/466,
-                                             // mean 458; recal 2026-07-28 -- all noons now inside the deadzone)
-    constexpr float POT_MAX       = 0.9597f; // measured POT_LEVEL full CW (recal 2026-07-23;
-                                             // old 0.8813 was hit ~4:15, wasting the top of the throw)
+    // Measured 12-o'clock ADC value for POT_LEVEL, read at true noon via
+    // tools/read_once.py. Pots are non-linear (10k pull-down, daisy-uzd), so
+    // re-measure if the pull-down changes.
+    constexpr float LOFI_CENTER   = 0.458f;  // fleet mean 12 o'clock (modules 1/2/4/5:
+                                             // 448/473/445/466 -- all inside the deadzone)
+    constexpr float POT_MAX       = 0.9597f; // measured POT_LEVEL full CW
     constexpr float POT_MIN       = 0.0f;    // measured POT_LEVEL full CCW (~0.0002)
     constexpr float LOFI_DEADZONE = 0.02f;   // symmetric clean band around center
 
     // CW staging (fractions of the CW throw, 0 = center .. 1 = full CW):
     //   sample-rate reduction (exp, full range) + saturation (linear) + overdrive
-    constexpr float SRR_MAX       = 154;     // max sample-and-hold length (exp ramp; 60% of prior 256)
+    constexpr float SRR_MAX       = 154;     // max sample-and-hold length (exp ramp)
     constexpr float CW_SAT_DRIVE  = 3.0f;    // CW soft-saturation drive at full CW
     constexpr float DIST_DRIVE    = 6.0f;    // CW overdrive/distortion gain at full CW
 
@@ -86,19 +85,13 @@ namespace {
 
     // --- Internal LPG (daisy-nmr) ---
     // Decay is exponential in TIME, in TWO segments, with the knee at field 40
-    // and 500 ms.
+    // and 500 ms. A single exponential across 2 ms..20 s spends its bottom third
+    // on sub-20 ms times that all read as "click" and its top half on a range too
+    // narrow to hear. The knee buys resolution where the plucks and swells are:
     //
-    // The knee was at field 50 / 10 s, which put too much of the control in the
-    // wrong places at both ends. Below 30 each step was a 18.6% jump and the
-    // whole bottom third went on sub-20 ms times that all just read as "click";
-    // above 50, forty-nine numbers shared a 2x range, which is a resolution
-    // nobody can hear and half the control doing nothing. Moving the knee down
-    // narrows what 0..30 has to cover, finds real resolution for the plucks and
-    // swells around it, and gives the upper half a range worth having:
-    //
-    //   field  0..30 : 2 ms .. 126 ms   63x (was 166x)   14.8%/step (was 18.6%)
-    //   field 30..50 : 126 ms .. 934 ms  7x (was  30x)   10.5%/step (was 18.6%)
-    //   field 50..99 : 934 ms .. 20 s   21x (was   2x)    6.5%/step (was  1.4%)
+    //   field  0..30 : 2 ms .. 126 ms    63x   14.8%/step
+    //   field 30..50 : 126 ms .. 934 ms   7x   10.5%/step
+    //   field 50..99 : 934 ms .. 20 s    21x    6.5%/step
     //
     // The ratio-per-step changes at the knee; that kink is the point, not a bug.
     constexpr float LPG_DECAY_MIN_S = 0.002f;   // field 0  = 2 ms (percussive tick)
@@ -109,15 +102,12 @@ namespace {
     // Decay SHAPE. A plain one-pole (asymptotic to zero) drops hard in the first
     // instant and then trails off quietly for ages -- the note loses presence
     // almost immediately. Instead the one-pole aims at a NEGATIVE target -U and
-    // we take only the part above zero: the further below zero it aims, the
-    // straighter the visible portion. U -> inf is a linear ramp, U -> 0 is the
-    // old pure exponential.
-    //   U = 0.10 -> the audible span is ln(1.1/0.1) = 2.4 time constants, about
-    //   half the curvature of the old -40 dB exponential (4.6 tau). At the
-    //   halfway point the envelope now sits ~7 dB higher: the note holds, then
-    //   falls away, rather than vanishing and leaving a tail.
-    // Bonus: the envelope reaches TRUE zero at the set time, so the decay figure
-    // is now the actual length of the note, not a -40 dB approximation.
+    // only the part above zero is used: the further below zero it aims, the
+    // straighter the visible portion. U -> inf is a linear ramp, U -> 0 is a pure
+    // exponential. At U = 0.10 the audible span is ln(1.1/0.1) = 2.4 time
+    // constants (vs 4.6 tau for a -40 dB exponential), so the note holds and then
+    // falls away rather than vanishing and leaving a tail. It also reaches TRUE
+    // zero at the set time, so the decay figure is the actual length of the note.
     constexpr float LPG_DECAY_UNDERSHOOT = 0.10f;
     // Attack: sharp but never a click. Scaled to the decay so a 2 ms pluck isn't
     // blunted by a 1 ms ramp, and clamped to the ~1 ms vactrol rise at the top.
@@ -128,8 +118,8 @@ namespace {
     // LPG_FC_TRACK warps how the cutoff follows the envelope. >1 makes the filter
     // run AHEAD of the VCA -- it darkens faster than the note gets quieter, which
     // is what reads as an aggressive gate. At 1.5, half-envelope sits at ~280 Hz
-    // instead of ~690 Hz. (Raise toward 2 for more; the next lever after that is
-    // more poles, currently 2.)
+    // rather than the ~690 Hz a linear track would give. (Raise toward 2 for
+    // more; the next lever after that is more poles, currently 2.)
     constexpr float LPG_FC_MIN_HZ = 20.0f;
     constexpr float LPG_FC_MAX_HZ = 16000.0f;
     constexpr float LPG_FC_TRACK  = 1.5f;
@@ -207,10 +197,10 @@ FxChainConfig AudioPipeline::DefaultFxChain() {
     c.cvOutMode    = 0;  // CV out = envelope follower of Out1 by default
     c.timbreCvRoute = 0; // CV A/B -> Param A/B (normal) by default
     c.lpgDecay     = 0;  // LPG off (the module drones freely until you ask for a gate)
-    c.cvSlewRise   = 0;  // CV Out slew off (instant; matches pre-daisy-* behaviour)
-    c.cvSlewFall   = 0;  // CV Out slew off (instant; matches pre-daisy-* behaviour)
-    c.cvHold       = 0;  // CV Out hold off (every tick; matches pre-daisy-* behaviour)
-    c.reserved0    = 0;  // withdrawn field; see FxChainConfig
+    c.cvSlewRise   = 0;  // CV Out slew off (instant)
+    c.cvSlewFall   = 0;  // CV Out slew off (instant)
+    c.cvHold       = 0;  // CV Out hold off (capture every tick)
+    c.reserved0    = 0;  // spare byte; see FxChainConfig
     return c;
 }
 
@@ -238,7 +228,7 @@ void AudioPipeline::SetFxChain(const FxChainConfig& c) {
     flangerType_ = c.flangerType;
     phaserType_  = c.phaserType;
 
-    // ---- Internal LPG (daisy-nmr), consolidated on/off + decay (daisy-*) ----
+    // ---- Internal LPG (daisy-nmr), consolidated on/off + decay ----
     {
         float decay = LpgDecaySeconds(c.lpgDecay);
         // Solve the undershoot one-pole for "reaches exactly 0 after `decay`":
@@ -260,7 +250,7 @@ void AudioPipeline::SetFxChain(const FxChainConfig& c) {
         lpgEnabled_ = on;
     }
 
-    // ---- CV Out Hold window (daisy-*) ----
+    // ---- CV Out Hold window ----
     // The window lives here, not in CvOutput, because the capture phase is
     // anchored to the engine's t. CvOutput just consumes a ready-made capture
     // flag, so there is only ever one authority on when a capture happens.
@@ -507,11 +497,10 @@ void AudioPipeline::ProcessFx(float& l, float& r) {
     }
     float p2 = bpPhase_ + 0.25f; if (p2 >= 1.0f) p2 -= 1.0f;  // voice-2 sweep offset
 
-    // Skip a stage whose level is 0 (daisy-1dx). The stages are not cheap and
-    // they were previously all evaluated regardless, with MixStage discarding
-    // the result -- a one-effect patch paid for three. Measured cost of a
-    // skipped stage, per sample for both voices: chorus 249 (657 as Ensemble),
-    // flanger 277 (692 as Barber-pole), phaser 859 (1741 as 8-pole Bi-phase).
+    // Skip a stage whose level is 0 (daisy-1dx) -- evaluating it and mixing the
+    // result out makes a one-effect patch pay for three. Cost of a skipped stage,
+    // measured per sample for both voices: chorus 249 (657 as Ensemble), flanger
+    // 277 (692 as Barber-pole), phaser 859 (1741 as 8-pole Bi-phase).
     //
     // The variant phasors above are deliberately OUTSIDE this: they must keep
     // running while their stage is silent, or the sweep would jump when the
@@ -615,14 +604,11 @@ void AudioPipeline::Process(BytebeatEngine& engine, float** out, size_t size) {
         engine.Process(o1, o2);
         cleanBuffer_[i]  = o1;  // Out1 pre-lo-fi -> CV/BPM analysis
         cleanBuffer2_[i] = o2;  // Out2 pre-lo-fi -> CV DC-out mode (daisy-0pq)
-        // CV Out Hold capture, anchored to ABSOLUTE t (daisy-*).
+        // CV Out Hold capture, anchored to ABSOLUTE t.
         //
         // Fire when t == cvSampleOffset_ (mod window). The offset shifts WHICH
-        // PHASE of the window we land on; it is not a look-ahead. That matters
-        // for latency: an earlier version captured on the t == 0 phase and read
-        // f(t + offset) instead, which put the CV up to a whole window AHEAD of
-        // the audio -- 2 s at the slowest Rate. Sampling the phase directly
-        // reads exactly the same values with zero lead.
+        // PHASE of the window we land on; it is not a look-ahead, so the CV
+        // carries zero lead relative to the audio at any value.
         //
         // Why an offset at all: most formulas are a product with t masked to 8
         // bits, so the t == 0 phase zeroes the low bits -- at window >= 256 the
@@ -644,9 +630,8 @@ void AudioPipeline::Process(BytebeatEngine& engine, float** out, size_t size) {
         cvCaptureBuffer_[i]  = cap1;
         cvCaptureBuffer2_[i] = cap2;
         // The value Hold captures: the fresh un-interpolated formula value at
-        // the current t -- not o1/o2, which are still ramping toward it. No
-        // extra evaluation is needed now the offset is a capture phase rather
-        // than a look-ahead.
+        // the current t -- not o1/o2, which are still ramping toward it. The
+        // engine has already evaluated it, so this costs nothing extra.
         if (cap1) holdSample1_ = ((float)engine.GetRawSample()  / 127.5f) - 1.0f;
         if (cap2) holdSample2_ = ((float)engine.GetRawSample2() / 127.5f) - 1.0f;
         holdSampleBuffer_[i]  = holdSample1_;

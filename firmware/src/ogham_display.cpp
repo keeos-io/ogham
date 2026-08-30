@@ -94,8 +94,8 @@ void Display::ShowFxEdit(int field, int value, bool parallel, bool dpClean, bool
     } else if (field == 15) {
         // CV Out slew, rising: "Sr.NN" -- same name-DP-value shape as LPG decay
         // ('5' = S, no native S glyph on the segment font; matches field 1's
-        // "SEr" precedent). Shared by every CV Out mode, not just the DC ones
-        // (daisy-*). Applies when the target is above the current output.
+        // "SEr" precedent). Shared by every CV Out mode, not just the DC ones.
+        // Applies when the target is above the current output.
         segs[0] = TM1637::Encode('5');
         segs[1] = TM1637::Encode('r') | 0x80;
         if (blankValue) { segs[2] = segs[3] = 0x00; }
@@ -108,7 +108,7 @@ void Display::ShowFxEdit(int field, int value, bool parallel, bool dpClean, bool
     } else if (field == 16) {
         // CV Out slew, falling: "SF.NN" -- same shape/scope as rise (field 15),
         // independent coefficient, applies when the target is below the
-        // current output (daisy-*).
+        // current output.
         segs[0] = TM1637::Encode('5');
         segs[1] = TM1637::Encode('F') | 0x80;
         if (blankValue) { segs[2] = segs[3] = 0x00; }
@@ -131,7 +131,7 @@ void Display::ShowFxEdit(int field, int value, bool parallel, bool dpClean, bool
             segs[3] = TM1637::Encode('0' + value % 10);
         }
     } else if (field == 18) {
-        // Internal LPG, consolidated on/off + decay (daisy-*): "Lp.oF" off, or
+        // Internal LPG, consolidated on/off + decay: "Lp.oF" off, or
         // "Lp.01".."Lp.99" on with that decay (2ms..20s exp curve). Only 2
         // digits free for the value (vs. 3 on the single-char-label fields),
         // so "off" is abbreviated to "oF" rather than "oFF".

@@ -6,6 +6,28 @@ to the corresponding GitHub Release and their SHA-256 published.
 Full release notes, and the in-browser flasher, live at
 <https://keeos.io/firmware/ogham/>.
 
+## 1.17 — 2026-08-30
+
+A correctness fix that changes nothing on the module. The image is byte-identical
+to 1.16; it is here because the same source now also runs in the VCV Rack port,
+where the difference is real.
+
+- **`BpmClock` initialises its own members.** The class follows the usual
+  `Init()`-rather-than-constructor convention, and `Init()` leaves four working
+  arrays alone — `fftBuffer_`, `fluxLin_`, `corr_` and `bpmHist_` — because they
+  are written before they are read in normal operation. On the module that is
+  free: the instance is a file-scope static, so the loader zeroes it. In Rack it
+  is a member of a heap-allocated object, where those arrays start as whatever
+  was in that memory, and `bpmHist_` is the estimator's agreement history — so a
+  fresh instance could lock to a tempo derived from nothing, differently each
+  time. Every member now carries a default initialiser, which makes the class
+  correct wherever it is constructed rather than correct-if-the-caller-remembers.
+- **Nothing changed on the module.** The initialisers are all constant
+  expressions, so the static instance is still constant-initialised into `.bss`.
+  The compiled binary is byte-for-byte identical to 1.16 — same text, data and
+  bss, same MD5 — so there is no reason to reflash for this.
+- Settings are untouched — the stored layout is unchanged.
+
 ## 1.16 — 2026-08-18
 
 Housekeeping ahead of the sources being published: the unreachable placeholder

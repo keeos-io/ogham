@@ -1,0 +1,50 @@
+# -----------------------------------------------------------------------------
+# Ogham firmware — static analysis
+#
+# SPDX-FileCopyrightText: 2026 Steven Collins <https://keeos.io>
+# SPDX-License-Identifier: MIT
+# -----------------------------------------------------------------------------
+#
+# cppcheck over the firmware sources. It needs no build, no toolchain and no
+# target, so it runs on every push in seconds.
+#
+# The invocation matches the one the VCV Rack port uses, so a finding reads the
+# same in both places. Exhaustive rather than cppcheck's normal level, which
+# otherwise reports the branches it skipped as an informational finding and
+# fails on it. --inline-suppr so a deliberate exception can be marked at the
+# line it applies to, with its reason, rather than hidden in a config file.
+# -----------------------------------------------------------------------------
+
+name: Analysis
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  cppcheck:
+    name: cppcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cppcheck
+
+      # gnu++14 is what libDaisy's core Makefile builds with; cppcheck has no
+      # gnu++ dialect, and c++14 is near enough for what it checks.
+      - name: Analyse the firmware sources
+        run: |
+          cppcheck firmware/src/ \
+            --std=c++14 \
+            -j$(nproc) \
+            --check-level=exhaustive \
+            --error-exitcode=1 \
+            --enable=warning,performance,portability \
+            --suppress=missingInclude \
+            --inline-suppr

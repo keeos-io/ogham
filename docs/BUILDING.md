@@ -245,7 +245,15 @@ cd firmware && make program
 
 Look for `** Verified OK **`.
 
+On a Seed3 this route needs soldering first: Electro-Smith replaced the
+surface-mount debug connector with bare through-hole pads, so there is nothing
+to clip a probe onto until you fit a header. DFU, below, needs no probe at all
+and is the easier path on that revision.
+
 ### Over USB (DFU) — no probe required
+
+Use a data-capable cable — USB-C on a Seed3, micro-USB on earlier revisions. A
+charge-only cable will not enumerate.
 
 Hold **BOOT**, tap **RESET**, release **BOOT**, then:
 

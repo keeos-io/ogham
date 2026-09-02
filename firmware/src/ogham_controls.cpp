@@ -134,7 +134,17 @@ float Controls::CombineParam(float pot, float sumAdc, float offset, float gain) 
     // subtracting a negative from a railed 0 would invent a CV that is not there.
     float expected = offset - gain * pot;
     if (expected < 0.0f) expected = 0.0f;
-    v += (expected - sumAdc) / offset;
+
+    // With nothing patched this term should be exactly 0, and it is not: the
+    // offsets were fitted on one module and another module's amp sits a few
+    // thousandths away. That residual costs a count or two at whichever rail
+    // its sign points to -- A and B bottoming out at 1-2 instead of 0, or a
+    // module whose error runs the other way stopping short of 255. Formulas
+    // treat 0 as a real value, so both rails have to be exact; anything
+    // smaller than the fleet's offset spread reads as no CV at all.
+    float cv = (expected - sumAdc) / offset;
+    if (cv > -CV_NULL_BAND && cv < CV_NULL_BAND) cv = 0.0f;
+    v += cv;
 
     if (v < 0.0f) v = 0.0f;
     if (v > 1.0f) v = 1.0f;

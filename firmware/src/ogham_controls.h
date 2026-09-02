@@ -148,6 +148,17 @@ private:
     // Raw ADC0/1 at full clockwise. Deliberately a little under the measured
     // 0.9508 so every module reaches 255 before the end stop rather than falling
     // a count or two short; the cost is that the top ~0.6% of travel is already
-    // at maximum. VERIFY ON A SECOND MODULE before trusting the margin.
+    // at maximum. Verified on module #3 (2026-09-02): both pots top out at
+    // 0.9510, within 0.0002 of module #1, and both reach 255 with none of the
+    // rotation dead at the top.
     static constexpr float POT_FULL_SCALE = 0.9450f;
+
+    // Null band on the recovered CV, in parameter units (1.0 = full scale).
+    // 0.012 is about 3 counts of 255, or 30 mV at the jack -- under the noise of
+    // the CV chain, and about 2.4x the largest zero-error measured across the
+    // modules (0.0050 on module #3, against ~0 on module #1, which the offsets
+    // above were fitted to). A band rather than a re-fitted offset because
+    // module #3 is also the first with a Seed3: the shift could be the new ADC
+    // front end rather than the MCP6004, and two modules is not a fleet.
+    static constexpr float CV_NULL_BAND = 0.012f;
 };

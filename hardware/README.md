@@ -129,6 +129,14 @@ Sources that have worked (UK):
 > batches exist with opposite A/B phase and the firmware cannot tell them apart,
 > so if the Func encoder counts down when turned clockwise, flash the other
 > build — see [`../firmware/README.md`](../firmware/README.md).
+>
+> **Why the 15 mm shaft.** It matches the Alpha pots dimensionally: the same
+> 5 mm M7 × 0.75 bushing and the same 15 mm from mounting shoulder to shaft tip,
+> so the encoder knob sits level with the four pot knobs rather than standing
+> proud of them. The 20 mm variant of the same encoder carries a 7 mm bushing
+> and would not. The cost of that choice is a short thread — 5 mm of bushing
+> against a 1.6 mm panel — so expect to pack a washer under the nut to pull the
+> encoder flush.
 
 ## Panel
 

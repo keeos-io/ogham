@@ -117,16 +117,18 @@ Sources that have worked (UK):
 |---|---|---|
 | Thonkiconn PJ398SM jacks | 8 | [thonk.co.uk](https://www.thonk.co.uk/shop/thonkiconn/) |
 | Alpha 9 mm B10K D-shaft pots | 4 | [thonk.co.uk](https://www.thonk.co.uk/shop/alpha-9mm-pots-dshaft/) |
-| Rotary encoder, 20 mm T18 shaft, 24 PPR with switch | 1 | [thonk.co.uk](https://www.thonk.co.uk/shop/20mm-encoder-pots-t18/) |
+| Rotary encoder, Bourns `PEC11R-4115K-S0018` | 1 | Any distributor — Mouser, Farnell, Digi-Key |
 | Breakaway pin header | 1 bag | [thonk.co.uk](https://www.thonk.co.uk/shop/60-pin-header/) |
 | 2×5 IDC power header | 1 | Mouser / Soundtronics / York Modular |
 | Daisy Seed (Rev 4) | 1 | Electro-Smith |
 | C5, 10 µF tantalum | 1 | Any distributor — `TAP106J016SCS` or equivalent |
 
-> **Encoder note.** Two batches exist with opposite A/B phase, and the firmware
-> has a build for each. Whichever you fit, if the Func encoder counts down when
-> turned clockwise, flash the other build — see
-> [`../firmware/README.md`](../firmware/README.md).
+> **Encoder note.** `PEC11R-4115K-S0018` is a 15 mm knurled (T18) shaft with a
+> push switch, 18 detents and 18 pulses per revolution — one pulse per detent.
+> It is the swapped-A/B part, which the **default** firmware build targets. Two
+> batches exist with opposite A/B phase and the firmware cannot tell them apart,
+> so if the Func encoder counts down when turned clockwise, flash the other
+> build — see [`../firmware/README.md`](../firmware/README.md).
 
 ## Panel
 

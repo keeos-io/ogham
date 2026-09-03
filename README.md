@@ -15,9 +15,7 @@ two at once, and clocks, pitches and modulates them from the rest of your rack.
 
 > **Status: prototype.** Built and tested on a handful of units, not qualified
 > for production. Published so others can learn from it and build on it. Check
-> the design yourself before you commit money to a fab run, and read the
-> [known issues](hardware/README.md#known-issues-and-planned-changes) first —
-> two mechanical fixes are already due in the next revision.
+> the design yourself before you commit money to a fab run.
 
 ## What's here
 

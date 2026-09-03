@@ -30,13 +30,19 @@ LofiConfig g_lofiConfig = {
 
 // Lo-fi macro tuning
 namespace {
-    // Measured 12-o'clock ADC value for POT_LEVEL, read at true noon via
-    // tools/read_once.py. Pots are non-linear (10k pull-down, daisy-uzd), so
+    // Centre of the Tone pot, raw ADC. The 2026-09 standard part is a
+    // CENTRE-DETENT pot: the detent measures 0.477, and being a detent it lands
+    // there every time rather than wherever the eye put it. The old 0.458 was a
+    // fleet mean (modules 1/2/4/5 read 448/473/445/466) and the detent sat
+    // 0.019 away from it -- one thousandth short of falling out of the +-0.020
+    // clean band altogether, which is why the centre read as unreliable.
+    //
+    // Ends are set inside the measured travel on purpose; see POT_ZERO in
+    // ogham_controls.h. Pots are non-linear (10k pull-down, daisy-uzd), so
     // re-measure if the pull-down changes.
-    constexpr float LOFI_CENTER   = 0.458f;  // fleet mean 12 o'clock (modules 1/2/4/5:
-                                             // 448/473/445/466 -- all inside the deadzone)
-    constexpr float POT_MAX       = 0.9597f; // measured POT_LEVEL full CW
-    constexpr float POT_MIN       = 0.0f;    // measured POT_LEVEL full CCW (~0.0002)
+    constexpr float LOFI_CENTER   = 0.477f;  // measured centre detent
+    constexpr float POT_MAX       = 0.915f;  // 0.030 under the measured 0.945
+    constexpr float POT_MIN       = 0.020f;  // margin, not the measured 0.000
     constexpr float LOFI_DEADZONE = 0.02f;   // symmetric clean band around center
 
     // CW staging (fractions of the CW throw, 0 = center .. 1 = full CW):

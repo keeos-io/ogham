@@ -22,9 +22,8 @@ public:
     // Normal displays (skipped while a param flash is showing):
     //   "X-NN" = output X (1/2) playing numbered function NN (0-based, 00..99)
     //   "X-AA" = output X playing the A440 tuning reference (special slot)
-    // dpClean lights the far-right decimal point when the lo-fi macro is clean.
-    void ShowVoice(int outputNum, int functionNum, bool dpClean);
-    void ShowVoiceRef(int outputNum, bool dpClean);   // "X-AA" A440 reference
+    void ShowVoice(int outputNum, int functionNum);
+    void ShowVoiceRef(int outputNum);   // "X-AA" A440 reference
 
     // Boot: firmware version as "M.mm" (e.g. " 1.00"); the major digit carries the DP.
     void ShowVersion(int major, int minor);
@@ -40,9 +39,8 @@ public:
     // "Lp.oF" off or "Lp.NN" on with that decay (value = the raw 0-99 field;
     // 0 means off). Field 19: "t.oFF"/"t.A"/"t.b" CV->Timbre routing. Field 20:
     // "q.oFF".."q.128" param-interp grid. Field 21: "d.on"/"d.oFF" Out2 drone.
-    // The far-right DP mirrors the lo-fi clean-center indicator (dpClean).
     // blankValue (edit flash) blanks the value, keeps the label.
-    void ShowFxEdit(int field, int value, bool parallel, bool dpClean, bool blankValue);
+    void ShowFxEdit(int field, int value, bool parallel, bool blankValue);
 
     // Record a parameter value to flash (e.g., "A238" / "b123"). Cheap: it only
     // stores the pending value — the actual (blocking) TM1637 write is deferred to
@@ -65,14 +63,33 @@ public:
     // (e.g. "‾8", "‾32"). Uses the same deferred-flash timing as FlashParam.
     void FlashClockRatio(int exp);
 
+    // Rate knob flash (daisy-wvv). Two forms, because the knob means two
+    // different things depending on the Mode switch.
+    //
+    // FlashSemitones: V/oct fine tune, in semitones off the centre detent, to
+    // one decimal ("-1.5", " 0.0", "12.0", "-12.0"). Right-aligned with the
+    // decimal point on the units cell, so the sign has room at full throw.
+    void FlashSemitones(float semis);
+    // Update a showing cents/multiplier flash WITHOUT restarting its timeout.
+    // Needed because the pot is smoothed: when the knob stops, the value is
+    // still converging, and the arming threshold is crossed only while it moves
+    // fast. Without a refresh the display freezes at a mid-settle reading --
+    // low if you arrived from the left, high from the right -- which looks
+    // exactly like knob hysteresis and is not.
+    void RefreshSemitones(float semis);
+
+    // FlashRateMult: free-running playback rate as a multiplier, auto-ranged --
+    // "  64" above ten, otherwise two decimals ("2.50", "1.00", "0.25", "0.02").
+    void FlashRateMult(float mult);
+    void RefreshRateMult(float mult);
+
     // Keep an already-showing param flash's value current (e.g. under CV) WITHOUT
     // restarting its timeout. No-op unless a flash for `prefix` is active — so a
     // CV-driven value change updates the number but can't hold the display on.
     void UpdateFlashValue(char prefix, int value);
 
     // Write the pending param flash (call at the ~30Hz display rate while flashing).
-    // dpClean lights the far-right decimal point (Lo-Fi clean-center indicator).
-    void DrawPendingFlash(bool dpClean);
+    void DrawPendingFlash();
 
     // Call from main loop to handle flash timeout
     void Update();
@@ -92,6 +109,10 @@ private:
     // adjustment, or the value blanks between one step and the next.
     static constexpr uint32_t FLASH_DURATION_MS = 2500;
 
-    // Draw "[c0]-NN" with digit-0 decimal point if dpClean.
-    void ShowLabeled(uint8_t c0seg, int twoDigit, bool dpClean);
+    // Draw "[c0]-NN".
+    void ShowLabeled(uint8_t c0seg, int twoDigit);
+
+    // Segment builders shared by the Flash*/Refresh* pairs.
+    static void BuildSemitones(float semis, uint8_t* s);
+    static void BuildRateMult(float mult, uint8_t* s);
 };

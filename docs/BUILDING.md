@@ -209,19 +209,6 @@ line above. The files that fail to arrive are CMSIS unit tests, and a build on
 top of the incomplete checkout still produced byte-identical firmware here — but
 git reports the clone as failed, which is not a state worth building on.
 
-### Two encoder builds
-
-Two batches of rotary encoder exist with opposite A/B phase, and the firmware
-cannot tell which is fitted:
-
-```bash
-make -j8                                              # default — current encoder
-make -f Makefile.encorig BUILD_DIR=build_encorig -j8  # early units
-```
-
-If, after flashing, the Func encoder counts **down** when turned clockwise, you
-have the wrong one. Flash the other; nothing else differs.
-
 ### Libraries somewhere else
 
 ```bash
@@ -288,7 +275,6 @@ from the rack.
 | `No DFU capable USB device available` | Not in DFU mode, or (Windows) no WinUSB driver — see Zadig above |
 | `LIBUSB_ERROR_ACCESS` (Linux) | udev rules missing — see above |
 | Blank display after DFU | Flashed without `:leave`, so still in DFU mode. Re-flash with it, or power-cycle **with USB unplugged** |
-| Encoder counts backwards | Wrong encoder build — flash the other one |
 | Builds fine, checksum differs | Different compiler version or unpinned submodules. Harmless unless you are verifying a release |
 
 Anything not covered here, please open an

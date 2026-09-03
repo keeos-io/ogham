@@ -14,22 +14,29 @@
 
 LIB_DIR ?= ../lib
 
-# Ogham firmware — ORIGINAL-ENCODER variant (module 1 only).
+# Ogham firmware — SWAPPED-A/B ENCODER variant.
 #
-# The MAIN build (Makefile) now targets the reversed/swapped-A/B encoder, because
-# that is the part modules 2-5 and everything since actually use. This variant is
-# for the one unit still fitted with the original encoder: it passes
-# -DENC_REVERSED=0, restoring the negation in ogham_controls.cpp. Identical to
-# the normal build in every other respect.
+# You almost certainly do not want this. The normal `make` is the build for
+# every Ogham that has been distributed; this variant exists for a handful of
+# in-house development units fitted with an encoder batch whose A/B phase is
+# reversed, and it is not published as a binary.
+#
+# WATCH THE DIRECTION: this file was Makefile.encorig before v1.18 and forced
+# ENC_REVERSED=0. Since v1.18 the MAIN build passes 0, because that is what the
+# standard part needs. What is left over is the swapped batch, which this passes
+# 1 for. The source of truth is the `#define ENC_REVERSED` default in
+# src/ogham_controls.cpp -- not this filename, and not an older release note.
+#
+# Identical to the normal build in every other respect.
 #
 # Build (own object dir so the differing flag can't collide with the normal build):
-#   make -f Makefile.encorig BUILD_DIR=build_encorig -j8
+#   make -f Makefile.encswap BUILD_DIR=build_encswap -j8
 # Flash:
-#   openocd ... -c "program ./build_encorig/ogham_bytebeat_encorig.elf verify reset exit"
+#   dfu-util -a 0 -s 0x08000000:leave -D build_encswap/ogham_bytebeat_encswap.bin
 #
 # Reverting a unit either way = flash the other build.
-TARGET = ogham_bytebeat_encorig
-C_DEFS = -DENC_REVERSED=0
+TARGET = ogham_bytebeat_encswap
+C_DEFS = -DENC_REVERSED=1
 
 CPP_SOURCES = \
 	src/ogham_main.cpp \

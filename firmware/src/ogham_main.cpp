@@ -61,7 +61,7 @@ static BpmClock bpmClock;
 //     future build can read the previously-installed version (e.g. to migrate).
 //     BUMP THIS on every flashed release. ---
 static constexpr int      FW_VER_MAJOR = 1;
-static constexpr int      FW_VER_MINOR = 17;  // 0..99, shown as two digits (v1.17)
+static constexpr int      FW_VER_MINOR = 18;  // 0..99, shown as two digits (v1.18)
 static constexpr uint32_t FW_VERSION   = (uint32_t)FW_VER_MAJOR * 100u + FW_VER_MINOR; // 100 = v1.00
 
 // --- Persisted settings (QSPI). Bump SETTINGS_VERSION to invalidate old layouts. ---
@@ -210,17 +210,58 @@ static constexpr int ENC_MENU_FAST_MULT = 3;   // detent gap < ENC_FAST_MS
 static constexpr int ENC_MENU_MED_MULT  = 2;   // detent gap < ENC_MED_MS
 
 // --- POT_RATE calibration (raw ADC; pots non-linear from the 10k pull-down,
-//     daisy-uzd). Center-aware so 12 o'clock = 1x rate. Fleet calibration
-//     (modules 1/2/4/5): 12 o'clock reads 459/476/450/450 (mean 459), full-CW
-//     ~959. A single-unit centre value is not good enough here -- being 0.09 out
-//     puts noon at ~1.3x on every other module. ---
-static constexpr float RATE_POT_MIN    = 0.0f;
-static constexpr float RATE_POT_CENTER = 0.459f;   // fleet mean 12 o'clock
-static constexpr float RATE_POT_MAX    = 0.955f;   // fleet full-CW ~0.959, margin so all reach 4x
+//     daisy-uzd). Center-aware so 12 o'clock = 1x rate.
+//
+//     The 2026-09 standard part is a CENTRE-DETENT pot, which changes the basis
+//     of this calibration. The old values were fleet MEANS (12 o'clock read
+//     459/476/450/450 across modules 1/2/4/5) because noon on a smooth pot is
+//     found by eye and lands somewhere different on every unit, so a mean was
+//     the least-bad compromise. A detent puts noon in the same place every
+//     time, so a single measured value is now both exact and repeatable.
+//
+//     Measured on the standard part: full CW 0.945. MIN and MAX are set inside
+//     the travel on purpose -- see POT_ZERO in ogham_controls.h for why.
+//     CenterNorm already clamps, so the ends simply arrive early.
+//
+//     THE CENTRE IS THE MIDPOINT OF THE TWO APPROACHES, not a single parked
+//     reading. The detent has about 12 ADC counts of mechanical play: brought
+//     in from the left it rests near 0.4470, from the right near 0.4590. A
+//     reading taken from one side is therefore up to 6 counts off whichever way
+//     the hand happened to be moving. 0.453 is the middle of the measured pair.
+//     The earlier 0.461 was a single parked reading of unknown approach on a
+//     different module, which is why the detent read 23 cents flat in V/oct.
+//
+//     The play itself is mechanical and no constant removes it: it remains
+//     worth about 32 cents of V/oct fine tune, half either side of centre. That
+//     was accepted deliberately rather than narrowing the +-12 semitone span,
+//     which would have shrunk it proportionally but cost fine-tune range.
+//
+//     It bites ONLY in V/oct, because that is the one consumer with no
+//     tolerance band of its own: the Tone knob's clean centre carries a +-20
+//     count deadzone that swallows 12 counts of play whole, and a few counts of
+//     free-running rate error at noon is inaudible. ---
+static constexpr float RATE_POT_MIN    = 0.020f;   // margin, not the measured 0.000
+static constexpr float RATE_POT_CENTER = 0.453f;   // midpoint of the two approaches
+static constexpr float RATE_POT_MAX    = 0.915f;   // 0.030 under the measured 0.945
+
+// Half-width of the detent's dead band, raw ADC. The detent's two resting
+// positions measured 5.3 counts below and 6.5 counts above centre - 11.8 counts
+// of play - so 10 covers both with margin. Costs nothing at the ends (CenterNorm
+// renormalises) and about 7 degrees of rotation either side of the detent where
+// nothing changes, which is what "detented" should feel like anyway.
+static constexpr float RATE_CENTER_BAND = 0.010f;
 // Raw-pot movement needed to re-roll CV Out's capture phase. ~100x the measured
 // ADC noise (~1e-4) so it never self-triggers while stationary, but only ~2
 // degrees of a 300-degree throw, so a deliberate nudge always lands.
 static constexpr float RATE_REROLL_DEADBAND = 0.008f;
+
+// Raw-pot movement needed to (re)arm the Rate knob's display flash (daisy-wvv).
+// Much finer than the re-roll deadband above: this one has to respond to the
+// smallest deliberate nudge, because its whole job during tuning is to show a
+// few cents of change. ~10x the measured ADC noise, so it will not self-trigger
+// while the knob is still.
+static constexpr float RATE_FLASH_EPS = 0.001f;
+static float lastFlashRatePot = -1.0f;   // <0 = not yet adopted (see the use site)
 static float lastRerollPot = -1.0f;   // <0 = not yet adopted (see the use site)
 
 // --- CV->Timbre routing (daisy-gtw) ---
@@ -236,10 +277,34 @@ static constexpr float TIMBRE_CV_DEPTH  = 1.0f;   // isolated CV -> timbre-macro
 
 // Map a raw pot reading to a centered 0..1 (calibrated center -> 0.5) so a
 // downstream symmetric mapping puts its midpoint at the mechanical 12 o'clock.
-static inline float CenterNorm(float raw, float lo, float ctr, float hi) {
+// Centre-detent pots have mechanical play: the Rate knob's detent rests about
+// 12 ADC counts apart depending on which way it was turned into it, which read
+// as 0.95x from the left and 1.06x from the right, and as tens of cents in
+// V/oct. No centre constant can fix that -- the wiper genuinely stops in two
+// different places -- so the detent needs a band, not a better number.
+//
+// SOFT band, not a hard snap. The reading is pulled toward centre by `band` and
+// clamped there, then normalised against the SHORTENED span so the ends still
+// reach 0 and 1 exactly. Consequences, all wanted:
+//   - anything within `band` of the detent reads exactly centre
+//   - the response stays continuous, with no jump at the band edge
+//   - every value remains reachable, unlike a hard snap, which would leap from
+//     centre straight to the band edge and make small deliberate detunes
+//     unsettable
+//   - full range is preserved: without the renormalisation the band would cost
+//     the ends, turning 64x into 58x and +-12 semitones into +-11.7
+static inline float CenterNorm(float raw, float lo, float ctr, float hi, float band) {
     float n;
-    if (raw <= ctr) n = (ctr > lo) ? 0.5f * (raw - lo) / (ctr - lo) : 0.0f;
-    else            n = (hi > ctr) ? 0.5f + 0.5f * (raw - ctr) / (hi - ctr) : 1.0f;
+    if (raw > ctr) {
+        float r = raw - band; if (r < ctr) r = ctr;
+        float span = (hi - band) - ctr;
+        n = (span > 0.0f) ? 0.5f + 0.5f * (r - ctr) / span : 1.0f;
+    } else {
+        float r = raw + band; if (r > ctr) r = ctr;
+        float lo2 = lo + band;
+        float span = ctr - lo2;
+        n = (span > 0.0f) ? 0.5f * (r - lo2) / span : 0.0f;
+    }
     if (n < 0.0f) n = 0.0f;
     if (n > 1.0f) n = 1.0f;
     return n;
@@ -965,9 +1030,24 @@ int main(void) {
 
         // Pot 3 -> Rate (exponential 1/64x - 64x), calibrated so 12 o'clock = 1x
         float rawRatePot = controls.GetRate();
-        float rateKnob = CenterNorm(rawRatePot,
-                                    RATE_POT_MIN, RATE_POT_CENTER, RATE_POT_MAX);
+        float rateKnob = CenterNorm(rawRatePot, RATE_POT_MIN, RATE_POT_CENTER,
+                                    RATE_POT_MAX, RATE_CENTER_BAND);
         float knobRate = Controls::MapKnobToRate(rateKnob);
+
+        // Arm the Rate flash on physical knob movement. Boot adopts the knob
+        // position WITHOUT flashing, so a power-up does not throw a number on
+        // the display before the version splash has been read.
+        bool rateMoved = false;
+        if (lastFlashRatePot < 0.0f) {
+            lastFlashRatePot = rawRatePot;
+        } else if (rawRatePot - lastFlashRatePot >  RATE_FLASH_EPS ||
+                   lastFlashRatePot - rawRatePot >  RATE_FLASH_EPS) {
+            lastFlashRatePot = rawRatePot;
+            rateMoved = true;
+        }
+        const bool rateFlashOk = rateMoved
+                              && (System::GetNow() - bootMs) > PARAM_FLASH_GRACE_MS
+                              && funcMode != FUNC_FX;
 
         // Re-roll CV Out's capture phase whenever the Rate knob actually moves.
         // Which phase the Hold stage sits on decides how the capture lines up
@@ -1014,6 +1094,14 @@ int main(void) {
             // another oscillator by ear.
             float cvOct   = (controls.GetVoct() - VOCT_ZERO_FRAC) / VOCT_FRAC_PER_OCT;
             float knobOct = (rateKnob - 0.5f) * VOCT_KNOB_SPAN_OCT;
+            // Fine tune on the display, in cents off the detent, so it can be
+            // set by eye as well as by ear -- and so the detent's own play can
+            // be read rather than guessed at (daisy-4a5).
+            {
+                float semis = knobOct * 12.0f;
+                if (rateFlashOk) display.FlashSemitones(semis);
+                else             display.RefreshSemitones(semis);  // settle on screen
+            }
             float rate    = VOCT_RATE_TUNE * powf(2.0f, cvOct + knobOct);
             if (rate > CLOCK_RATE_MAX) rate = CLOCK_RATE_MAX;
             if (rate < VOCT_RATE_MIN)  rate = VOCT_RATE_MIN;
@@ -1043,6 +1131,10 @@ int main(void) {
                 lastClockRatioExp = e;
             } else {
                 engine.SetRate(knobRate);
+                // Free-running: show the multiplier. The clocked branch above has
+                // its own ratio flash, so this is the no-clock case only.
+                if (rateFlashOk) display.FlashRateMult(knobRate);
+                else             display.RefreshRateMult(knobRate);
                 lastClockRatioExp = 999;   // reset so the next clock re-flashes x1
             }
         }
@@ -1138,11 +1230,10 @@ int main(void) {
             lastDisplayTime = now;
 
             display.Update();  // time out any param flash first
-            bool clean = pipeline.IsLofiClean();
             if (display.IsFlashing()) {
                 // Deferred param flash: the (blocking) write happens here at 30Hz,
                 // not in the per-loop param path (which would throttle the loop).
-                display.DrawPendingFlash(clean);
+                display.DrawPendingFlash();
             } else if (funcMode == FUNC_FX) {
                 int val = 0;
                 if (fxField == FX_FIELD_GLOBAL)      val = g_fx.enabled;
@@ -1158,14 +1249,14 @@ int main(void) {
                 // Edit mode: flash the value at ~80% duty (~600ms period) so it's
                 // clear you're editing vs navigating.
                 bool blankValue = fxEditing && ((now % 600) >= 480);
-                display.ShowFxEdit(fxField, val, g_fx.parallel != 0, clean, blankValue);
+                display.ShowFxEdit(fxField, val, g_fx.parallel != 0, blankValue);
             } else {
                 int idx = (selOut == 0) ? engine.GetFormula1Index()
                                         : engine.GetFormula2Index();
                 if (idx == GetReferenceIndex()) {
-                    display.ShowVoiceRef(selOut + 1, clean);   // "X-AA" A440 reference
+                    display.ShowVoiceRef(selOut + 1);   // "X-AA" A440 reference
                 } else {
-                    display.ShowVoice(selOut + 1, idx, clean); // 0-based function number
+                    display.ShowVoice(selOut + 1, idx);  // 0-based function number
                 }
             }
         }

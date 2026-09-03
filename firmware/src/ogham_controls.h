@@ -65,6 +65,13 @@ public:
     // Pot + CV summed in software (the analog sum rails at 79% of pot travel).
     static float CombineParam(float pot, float sumAdc, float offset, float gain);
     float GetCvRaw(int i) const { return (i >= 0 && i < 2) ? cvSmoothed_[i] : 0.0f; }  // raw ADC4-5
+
+    // The summing-amp intercept for channel 0/1, exposed so the calibration
+    // diagnostic fits against the same number the firmware uses rather than a
+    // copy of it that can drift.
+    static constexpr float CvZeroOffset(int ch) {
+        return ch ? CV_ZERO_OFFSET_B : CV_ZERO_OFFSET_A;
+    }
     bool GetGate() const { return gate_; }
     bool GetClock() const { return clock_; }
 
@@ -134,8 +141,31 @@ private:
     // Fitted over a full sweep (236 samples, residual < 0.006, i.e. linear):
     //
     //     A:  adc = 0.7501 - 0.9990 * pot      B:  adc = 0.7499 - 0.9984 * pot
-    static constexpr float CV_ZERO_OFFSET_A = 0.7501f;
-    static constexpr float CV_ZERO_OFFSET_B = 0.7499f;
+    //
+    // Re-measured on the 2026-09 standard part: the intercept moved to 0.734 (A)
+    // and 0.736 (B), about 0.015 below the old fit. That is what stopped A and B
+    // reaching 0 -- with the knob against the anticlockwise stop the pot term is
+    // exactly zero, so the whole residual was this offset being read as a CV
+    // nobody had patched, and at 0.0196 and 0.0157 in parameter units it was
+    // wider than the null band could swallow.
+    //
+    // Correcting the intercept fixes the rail exactly, whatever the slope does:
+    // the recovered CV error scales with pot position, so at pot = 0 it is zero
+    // by construction.
+    //
+    // The SLOPE was then measured separately and had NOT moved. The diag
+    // firmware solves GAIN = (OFFSET - adc) / pot on the module, sampling knob
+    // and summed channel in the same instant, and read 0.999 on both channels.
+    // A matches its stored 0.9990 exactly; B's stored 0.9984 sits inside the
+    // reading's own 0.001 resolution, so both are left alone -- the originals
+    // come from a 236-sample fit and are the better numbers. A single 3-digit
+    // reading confirms them rather than improving on them.
+    //
+    // (The slope cannot be had from a full-clockwise sweep: the summing amp
+    // rails at ground around 78% of rotation, so that reading is a clamp at 0,
+    // not a data point. Hence solving it mid-travel.)
+    static constexpr float CV_ZERO_OFFSET_A = 0.734f;   // measured, standard part
+    static constexpr float CV_ZERO_OFFSET_B = 0.736f;   // measured, standard part
 
     // Slope of that line: how much the summed channel moves per unit of pot.
     // The pots reach 0.9508, so the amp would need a gain of 0.789 to arrive at
@@ -145,20 +175,44 @@ private:
     static constexpr float POT_ADC_GAIN_A = 0.9990f;
     static constexpr float POT_ADC_GAIN_B = 0.9984f;
 
-    // Raw ADC0/1 at full clockwise. Deliberately a little under the measured
-    // 0.9508 so every module reaches 255 before the end stop rather than falling
-    // a count or two short; the cost is that the top ~0.6% of travel is already
-    // at maximum. Verified on module #3 (2026-09-02): both pots top out at
-    // 0.9510, within 0.0002 of module #1, and both reach 255 with none of the
-    // rotation dead at the top.
-    static constexpr float POT_FULL_SCALE = 0.9450f;
+    // A/B pot span, raw ADC0/1. Both ends are deliberately set INSIDE the
+    // measured travel so the parameter reaches 0 and 255 with room to spare.
+    // Reaching the rails is what matters; using every last degree of rotation
+    // is not, and a margin is what makes the build tolerant of a pot batch that
+    // lands somewhere else.
+    //
+    // Measured full clockwise: 0.936 on the 2026-09 standard part, 0.951 on the
+    // earlier fleet (modules 1-5) -- a 0.015 spread between batches. The top
+    // margin is 0.030, twice that spread; the bottom is 0.020, pure insurance
+    // since every pot measured so far bottoms out at exactly 0.000. Both
+    // batches clear the rails: v = 1.034 on the new part, 1.051 on the old, so
+    // one calibration serves the whole fleet.
+    //
+    // Cost is 3.2% of the throw at the top and 2.1% at the bottom already
+    // sitting at the limit -- about ten and six degrees of a 300-degree pot.
+    static constexpr float POT_ZERO       = 0.020f;
+    static constexpr float POT_FULL_SCALE = 0.906f;
 
     // Null band on the recovered CV, in parameter units (1.0 = full scale).
-    // 0.012 is about 3 counts of 255, or 30 mV at the jack -- under the noise of
-    // the CV chain, and about 2.4x the largest zero-error measured across the
-    // modules (0.0050 on module #3, against ~0 on module #1, which the offsets
-    // above were fitted to). A band rather than a re-fitted offset because
-    // module #3 is also the first with a Seed3: the shift could be the new ADC
-    // front end rather than the MCP6004, and two modules is not a fleet.
-    static constexpr float CV_NULL_BAND = 0.012f;
+    // A departure smaller than this reads as no CV at all, which is what keeps
+    // a mis-fitted intercept from holding A and B off their rails.
+    //
+    // Sized from the intercept spread actually measured, not guessed. Three
+    // units span 0.7340 to 0.7501 ADC -- 0.0215 in parameter units, 5.5 counts
+    // of 255. The band was 0.012 (3.1 counts), SMALLER than that spread, which
+    // is exactly why the 2026-09 standard part bottomed out at 5 and 4 instead
+    // of 0 even though its pot reached ground cleanly. 0.030 covers 7.6 counts,
+    // about 1.4x the observed spread, so the next module off the bench should
+    // reach both rails without needing its own intercept measured.
+    //
+    // The cost is a ~74 mV dead zone around 0 V on the CV inputs: a modulation
+    // smaller than that does nothing. That is under 3% of their range and
+    // inside the noise of most CV sources. It does not touch the knob rails --
+    // those come from the pot term, which is exact at both ends.
+    //
+    // If a future batch ever spreads wider than this, the answer is per-unit
+    // calibration (measure the intercept with the diag firmware and store it)
+    // rather than widening the band again -- past roughly 0.04 the dead zone
+    // starts being audible as a step when a slow CV crosses it.
+    static constexpr float CV_NULL_BAND = 0.030f;
 };

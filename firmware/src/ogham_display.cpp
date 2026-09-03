@@ -34,7 +34,7 @@ void Display::ShowVersion(int major, int minor) {
     tm_->ShowChars(s);
 }
 
-void Display::ShowLabeled(uint8_t c0seg, int twoDigit, bool dpClean) {
+void Display::ShowLabeled(uint8_t c0seg, int twoDigit) {
     if (!tm_ || flashing_) return;
     if (twoDigit < 0) twoDigit = 0;
     if (twoDigit > 99) twoDigit = 99;
@@ -42,26 +42,25 @@ void Display::ShowLabeled(uint8_t c0seg, int twoDigit, bool dpClean) {
     segs[0] = c0seg;
     segs[1] = TM1637::Encode('-');
     segs[2] = TM1637::Encode('0' + (twoDigit / 10) % 10);
-    // Far-right DP = Lo-Fi clean-center (Level pot) indicator.
-    segs[3] = TM1637::Encode('0' + twoDigit % 10) | (dpClean ? 0x80 : 0x00);
+    segs[3] = TM1637::Encode('0' + twoDigit % 10);
     tm_->ShowChars(segs);
 }
 
-void Display::ShowVoice(int outputNum, int functionNum, bool dpClean) {
-    ShowLabeled(TM1637::Encode('0' + outputNum), functionNum, dpClean);
+void Display::ShowVoice(int outputNum, int functionNum) {
+    ShowLabeled(TM1637::Encode('0' + outputNum), functionNum);
 }
 
-void Display::ShowVoiceRef(int outputNum, bool dpClean) {
+void Display::ShowVoiceRef(int outputNum) {
     if (!tm_ || flashing_) return;
     uint8_t segs[4];
     segs[0] = TM1637::Encode('0' + outputNum);
     segs[1] = TM1637::Encode('-');
     segs[2] = TM1637::Encode('A');
-    segs[3] = TM1637::Encode('A') | (dpClean ? 0x80 : 0x00);
+    segs[3] = TM1637::Encode('A');
     tm_->ShowChars(segs);
 }
 
-void Display::ShowFxEdit(int field, int value, bool parallel, bool dpClean, bool blankValue) {
+void Display::ShowFxEdit(int field, int value, bool parallel, bool blankValue) {
     if (!tm_ || flashing_) return;
     uint8_t segs[4];
 
@@ -186,11 +185,6 @@ void Display::ShowFxEdit(int field, int value, bool parallel, bool dpClean, bool
         }
     }
 
-    // Far-right DP = Lo-Fi clean-center (Level pot) indicator. Applied on EVERY
-    // FX-menu screen and in every state (incl. edit-flash), kept live by the
-    // 30Hz redraw passing the current clean state.
-    if (dpClean) segs[3] |= 0x80;
-
     tm_->ShowChars(segs);
 }
 
@@ -219,6 +213,79 @@ void Display::FlashClockRatio(int exp) {
     flashStartMs_ = System::GetNow();
 }
 
+void Display::BuildSemitones(float semis, uint8_t* s) {
+    bool neg = semis < 0.0f;
+    float mag = neg ? -semis : semis;
+    int t = (int)(mag * 10.0f + 0.5f);      // tenths of a semitone
+    if (t > 999) t = 999;
+    s[0] = s[1] = 0x00;
+    // Right-aligned: tenths in the last cell, units (carrying the point) next
+    // to it, so "-12.0" still fits when the tens digit appears.
+    s[3] = TM1637::Encode('0' + t % 10);
+    s[2] = TM1637::Encode('0' + (t / 10) % 10) | 0x80;
+    if (t >= 100) {
+        s[1] = TM1637::Encode('0' + (t / 100) % 10);
+        if (neg) s[0] = TM1637::Encode('-');
+    } else if (neg) {
+        s[1] = TM1637::Encode('-');
+    }
+}
+
+void Display::BuildRateMult(float mult, uint8_t* s) {
+    // Right-aligned throughout, with the decimal point on the units cell.
+    //
+    // Precision drops as the multiplier rises, because the mapping is
+    // exponential and the digit has to be worth more than one ADC count or it
+    // just dithers. Near the top of the clockwise half a single count moves the
+    // multiplier by more than 0.01, so two decimals jittered on the last digit
+    // with the knob sitting still. One decimal above 1x is quiet and still
+    // finer than the ear. Below 1x two decimals are kept -- the whole
+    // anticlockwise range is 0.02 to 1.00, and one decimal would collapse most
+    // of it to "0.0".
+    s[0] = s[1] = s[2] = s[3] = 0x00;
+    if (mult >= 10.0f) {
+        int v = (int)(mult + 0.5f);            // 64
+        if (v > 99) v = 99;
+        s[2] = TM1637::Encode('0' + (v / 10) % 10);
+        s[3] = TM1637::Encode('0' + v % 10);
+    } else if (mult >= 1.0f) {
+        int v = (int)(mult * 10.0f + 0.5f);    // 1.0 -> 10, 2.5 -> 25
+        if (v > 99) v = 99;
+        s[2] = TM1637::Encode('0' + (v / 10) % 10) | 0x80;
+        s[3] = TM1637::Encode('0' + v % 10);
+    } else {
+        int v = (int)(mult * 100.0f + 0.5f);   // 0.25 -> 25, 0.02 -> 2
+        if (v > 99) v = 99;
+        s[1] = TM1637::Encode('0') | 0x80;
+        s[2] = TM1637::Encode('0' + (v / 10) % 10);
+        s[3] = TM1637::Encode('0' + v % 10);
+    }
+}
+
+void Display::FlashSemitones(float semis) {
+    BuildSemitones(semis, pendingSegs_);
+    flashRaw_     = true;
+    flashing_     = true;
+    flashStartMs_ = System::GetNow();
+}
+
+void Display::RefreshSemitones(float semis) {
+    if (!flashing_ || !flashRaw_) return;
+    BuildSemitones(semis, pendingSegs_);
+}
+
+void Display::FlashRateMult(float mult) {
+    BuildRateMult(mult, pendingSegs_);
+    flashRaw_     = true;
+    flashing_     = true;
+    flashStartMs_ = System::GetNow();
+}
+
+void Display::RefreshRateMult(float mult) {
+    if (!flashing_ || !flashRaw_) return;
+    BuildRateMult(mult, pendingSegs_);
+}
+
 void Display::UpdateFlashValue(char prefix, int value) {
     // Keep the live value current (incl. CV) during an active flash, but leave
     // flashStartMs_ alone so the timeout still expires after the last knob turn.
@@ -226,14 +293,13 @@ void Display::UpdateFlashValue(char prefix, int value) {
     pendingValue_ = value;
 }
 
-void Display::DrawPendingFlash(bool dpClean) {
+void Display::DrawPendingFlash() {
     if (!tm_ || !flashing_) return;
     if (flashRaw_) {
         uint8_t s[4] = { pendingSegs_[0], pendingSegs_[1], pendingSegs_[2], pendingSegs_[3] };
-        if (dpClean) s[3] |= 0x80;   // far-right DP = Lo-Fi clean-center indicator
         tm_->ShowChars(s);
     } else {
-        tm_->ShowPrefixNumber(pendingPrefix_, pendingValue_, dpClean);
+        tm_->ShowPrefixNumber(pendingPrefix_, pendingValue_);
     }
 }
 

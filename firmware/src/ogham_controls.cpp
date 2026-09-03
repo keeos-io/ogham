@@ -19,14 +19,22 @@
 static constexpr uint16_t ENC_IDLE_CLEAR_SCANS = 3000;
 
 
-// Encoder direction (daisy-0wf). Two encoder batches exist with opposite A/B
-// phase. The DEFAULT is the reversed/swapped-A/B part, which is what modules 2-5
-// and everything built since actually use. Module 1 has the original encoder:
-// build it with -DENC_REVERSED=0 (see Makefile.encorig, output
-// ogham_bytebeat_encorig). Either way round, switching a unit over is just a
-// matter of flashing the other build.
+// Encoder direction (daisy-0wf, daisy-796). Encoder batches exist with opposite
+// A/B phase, and which one is the DEFAULT has now changed twice -- so read this
+// rather than trusting memory.
+//
+// Since 2026-09 the default is ENC_REVERSED=0, the part used by the standard
+// distribution build. Module 1's original encoder happens to want the same
+// direction, so it shares this build. Modules 2-5 carry the swapped-A/B part
+// and need -DENC_REVERSED=1 (see Makefile.encswap, output
+// ogham_bytebeat_encswap).
+//
+// Before 2026-09 the default was 1 and the variant was 0, which is the reverse
+// of this. Getting it backwards ships a module whose encoder counts down when
+// turned clockwise, so confirm against a real unit rather than against an older
+// release note. Either way round, switching a unit over is only a reflash.
 #ifndef ENC_REVERSED
-#define ENC_REVERSED 1
+#define ENC_REVERSED 0
 #endif
 
 void Controls::Init(daisy::DaisySeed* seed,
@@ -127,7 +135,8 @@ void Controls::SampleEncoder() {
 //           normalised by `offset` so a given voltage moves the parameter by
 //           the same amount it would have through the all-analog path
 float Controls::CombineParam(float pot, float sumAdc, float offset, float gain) {
-    float v = pot / POT_FULL_SCALE;
+    float v = (pot - POT_ZERO) / (POT_FULL_SCALE - POT_ZERO);
+    if (v < 0.0f) v = 0.0f;
     if (v > 1.0f) v = 1.0f;
 
     // Clamped at 0: past the rail the expected reading is negative, and
@@ -213,9 +222,9 @@ void Controls::Process() {
     encDelta_ = 0;
     __enable_irq();
 #if ENC_REVERSED
-    encoderInc_ = (int)d;    // swapped-A/B encoder (default): CW increases
+    encoderInc_ = (int)d;    // swapped-A/B part (modules 2-5): CW increases
 #else
-    encoderInc_ = -(int)d;   // original encoder: negate so CW increases
+    encoderInc_ = -(int)d;   // standard part (default): negate so CW increases
 #endif
     encoderPressed_ = encoder_->Pressed();
     encoderRising_ = encoderPressed_ && !lastEncoderPressed_;

@@ -20,7 +20,7 @@ fabricate by mistake.
 | Path | Contents |
 |---|---|
 | `ogham-merged-v1.0/` | Schematics (hierarchical: power, MCU, CV I/O, audio, UI), PCB, netlist |
-| `panel/` | Panel artwork SVGs, and the panel as a fabricable PCB — `PanelPCB-v2/` is current |
+| `panel/` | Panel artwork as SVG, and the panel as a fabricable PCB (`PanelPCB-v2/`) |
 | `production/` | Gerbers, BOM, placement, IPC netlist, and the interactive BOM |
 
 The schematic is a two-level hierarchy: `ogham-merged-v1.0` is the root, and it
@@ -136,10 +136,11 @@ Sources that have worked (UK):
 panels were actually made — a PCB panel is cheap, flat, and takes the graphics as
 silkscreen.
 
-**`PanelPCB-v2/` and `Ogham Panel Graphics (JLCPCB) v2.svg` are the current
-revision**, and the one the built modules use. `PanelPCB/` and the unversioned
-SVG are the first revision, kept because the earliest modules were made from
-them. Order from v2.
+`Ogham Panel Graphics (JLCPCB) v2.svg` is the editable artwork, and
+`PanelPCB-v2/` is the KiCad project converted from it — that project, and the
+gerbers in its `production/`, are what the built modules use. The first
+revision has been removed to leave only one panel to order from; it is still in
+the git history if you want it.
 
 **The fabrication files do not depend on any fonts.** The artwork is stored as
 polygons, converted from the SVG, so a panel ordered from

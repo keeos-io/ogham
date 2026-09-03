@@ -1,4 +1,0 @@
-
-(fp_lib_table
-  (lib (name "Ogham Panel Graphics (JLCPCB)")(type KiCad)(uri "$(KIPRJMOD)/Ogham Panel Graphics (JLCPCB).pretty")(options "")(descr ""))
-)

@@ -1,7 +1,7 @@
 (export
 	(version "E")
 	(design
-		(source "D:\\daisy\\hardware\\ogham\\ogham-merged-v1.0\\ogham-merged-v1.0.kicad_sch")
+		(source "D:\\modules\\ogham\\hardware\\ogham\\ogham-merged-v1.0\\ogham-merged-v1.0.kicad_sch")
 		(date "2026-07-02T10:43:16")
 		(tool "Eeschema 10.0.3")
 		(sheet

@@ -4409,17 +4409,6 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Connector_Audio.3dshapes/Jack_3.5mm_QingPu_WQP-PJ398SM_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz -0 -0 -180)
-			)
-		)
 		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
@@ -4943,17 +4932,6 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Connector_Audio.3dshapes/Jack_3.5mm_QingPu_WQP-PJ398SM_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz -0 -0 -180)
-			)
-		)
 		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
@@ -5478,17 +5456,6 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Connector_Audio.3dshapes/Jack_3.5mm_QingPu_WQP-PJ398SM_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz -0 -0 -180)
-			)
-		)
 		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
@@ -9073,17 +9040,6 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Connector_Audio.3dshapes/Jack_3.5mm_QingPu_WQP-PJ398SM_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
 		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
@@ -11294,17 +11250,6 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Connector_Audio.3dshapes/Jack_3.5mm_QingPu_WQP-PJ398SM_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz -0 -0 -180)
-			)
-		)
 		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
@@ -11655,17 +11600,6 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Connector_Audio.3dshapes/Jack_3.5mm_QingPu_WQP-PJ398SM_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz -0 -0 -0)
-			)
-		)
 		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
@@ -12360,17 +12294,6 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Connector_Audio.3dshapes/Jack_3.5mm_QingPu_WQP-PJ398SM_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz -0 -0 -180)
-			)
-		)
 		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
@@ -13185,17 +13108,6 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Connector_Audio.3dshapes/Jack_3.5mm_QingPu_WQP-PJ398SM_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
 		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)

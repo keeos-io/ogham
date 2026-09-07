@@ -21,3 +21,8 @@ fp-info-cache
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Third-party 3D models. The PCBs reference these as ${KIPRJMOD}/../_libs/...,
+# but they are other people's files and are not redistributed here — see
+# hardware/README.md for what to put in hardware/_libs/ and where to get it.
+hardware/_libs/

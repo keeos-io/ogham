@@ -28,6 +28,34 @@ pulls in `ogham-logic-v2.0` (→ power, MCU, CV I/O) and `ogham-ui-v0.2` (→ au
 UI). Those two keep the sheet names they had when the design was two separate
 boards — they are **not** old revisions, they are live sub-sheets of this one.
 
+## 3D models are not included
+
+The PCB references five third-party 3D models. They are other people's files, in
+one case 34 MB of one, and several arrived without a licence attached, so they
+are not redistributed here. Everything else the board needs is in this
+repository; only the 3D viewer is affected, and the board fabricates,
+assembles and works without them.
+
+The references are `${KIPRJMOD}`-relative, which means KiCad resolves them
+against the project directory. Create `hardware/_libs/` and drop the files in
+at these paths and the 3D view fills in with no edit to the PCB:
+
+| Path under `hardware/_libs/` | Part | Source | Licence |
+|---|---|---|---|
+| `AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step` | Thonkiconn PJ398SM jacks | [clacktronics/AudioJacks](https://github.com/clacktronics/AudioJacks) | MIT |
+| `kicad-3dmodels/potentiometers/ALPHA-RD901F-40.step` | Alpha 9mm pots | [dhaillant/kicad-3dmodels](https://github.com/dhaillant/kicad-3dmodels) | GPL-3.0 |
+| `TM1637/YAAJ_4_Digit_LED_Display_0_36_Dots_TM1637_PinHeader_Left_cp.step` | TM1637 display | [yet-another-average-joe/KiCad-Chinese_Modules](https://github.com/yet-another-average-joe/KiCad-Chinese_Modules) | not stated upstream |
+| `DaisySeed/ES_Daisy_Seed_Rev7-1.step` | Daisy Seed | Electro-Smith | not stated on the copy used here |
+| `Encoder/EC11E1834403/3D/EC11E1834403.stp` | EC11 encoder | manufacturer model; provenance not recorded | unknown |
+| `vendor/2MS1T1B1M2QES--3DModel-STEP-56544.STEP` | Mode toggle switch | manufacturer model | unknown |
+| `vendor/TAP106J016SCS.STEP` | Tantalum capacitor | manufacturer model | unknown |
+
+A missing model is a warning, not an error: KiCad opens the board and reports
+which ones it could not find. Note also that each jack footprint carries a
+second, dead model entry naming `${KICAD9_3DMODEL_DIR}`, a KiCad 9 path
+variable that KiCad 10 does not define. The jacks render from the AudioJacks
+model above, so that entry can be ignored.
+
 ## Browse the design without installing anything
 
 [KiCanvas](https://kicanvas.org) renders KiCad files in the browser, straight

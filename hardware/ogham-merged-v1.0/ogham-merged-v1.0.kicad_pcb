@@ -1689,7 +1689,7 @@
 			(uuid "b3730234-f4b5-43ec-bb50-af1367d49ef1")
 		)
 		(embedded_fonts no)
-		(model "D:/modules/ogham/hardware/ogham/_libs/Encoder/EC11E1834403/3D/EC11E1834403.stp"
+		(model "${KIPRJMOD}/../_libs/Encoder/EC11E1834403/3D/EC11E1834403.stp"
 			(offset
 				(xyz 7.5 -2.5 3.5)
 			)
@@ -3539,7 +3539,7 @@
 			(uuid "ef492b19-bfc9-4a4a-b407-03cd78d9003e")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/steve/Documents/KiCad/10.0/3dmodels/TAP106J016SCS.STEP"
+		(model "${KIPRJMOD}/../_libs/vendor/TAP106J016SCS.STEP"
 			(offset
 				(xyz 1.25 0 0)
 			)
@@ -4059,7 +4059,7 @@
 			(uuid "6539bed5-0509-4030-bc13-7a088dc26439")
 		)
 		(embedded_fonts no)
-		(model "D:/modules/ogham/hardware/ogham/_libs/kicad-3dmodels/potentiometers/ALPHA-RD901F-40.step"
+		(model "${KIPRJMOD}/../_libs/kicad-3dmodels/potentiometers/ALPHA-RD901F-40.step"
 			(offset
 				(xyz 7.5 -2.5 7)
 			)
@@ -4420,7 +4420,7 @@
 				(xyz -0 -0 -180)
 			)
 		)
-		(model "D:/modules/ogham/hardware/ogham/_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
+		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
 			)
@@ -4954,7 +4954,7 @@
 				(xyz -0 -0 -180)
 			)
 		)
-		(model "D:/modules/ogham/hardware/ogham/_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
+		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
 			)
@@ -5489,7 +5489,7 @@
 				(xyz -0 -0 -180)
 			)
 		)
-		(model "D:/modules/ogham/hardware/ogham/_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
+		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
 			)
@@ -6009,7 +6009,7 @@
 			(uuid "a47fc9a5-2305-4f8e-b758-a2c7c212e553")
 		)
 		(embedded_fonts no)
-		(model "D:/modules/ogham/hardware/ogham/_libs/kicad-3dmodels/potentiometers/ALPHA-RD901F-40.step"
+		(model "${KIPRJMOD}/../_libs/kicad-3dmodels/potentiometers/ALPHA-RD901F-40.step"
 			(offset
 				(xyz 7.5 -2.5 7)
 			)
@@ -6872,7 +6872,7 @@
 			(uuid "86d10c22-befa-4964-843a-b95489238149")
 		)
 		(embedded_fonts no)
-		(model "D:/modules/ogham/hardware/ogham/_libs/kicad-3dmodels/potentiometers/ALPHA-RD901F-40.step"
+		(model "${KIPRJMOD}/../_libs/kicad-3dmodels/potentiometers/ALPHA-RD901F-40.step"
 			(offset
 				(xyz 7.5 -2.5 7)
 			)
@@ -7812,7 +7812,7 @@
 				(xyz -0 -0 -0)
 			)
 		)
-		(model "D:/modules/ogham/hardware/ogham/_libs/TM1637/YAAJ_4_Digit_LED_Display_0_36_Dots_TM1637_PinHeader_Left_cp.step"
+		(model "${KIPRJMOD}/../_libs/TM1637/YAAJ_4_Digit_LED_Display_0_36_Dots_TM1637_PinHeader_Left_cp.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -9084,7 +9084,7 @@
 				(xyz 0 0 0)
 			)
 		)
-		(model "D:/modules/ogham/hardware/ogham/_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
+		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
 			)
@@ -10771,7 +10771,7 @@
 			(uuid "60222fca-0f79-4569-9a1b-13b7dbd65fff")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/steve/Documents/KiCad/10.0/3dmodels/2MS1T1B1M2QES--3DModel-STEP-56544.STEP"
+		(model "${KIPRJMOD}/../_libs/vendor/2MS1T1B1M2QES--3DModel-STEP-56544.STEP"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -11305,7 +11305,7 @@
 				(xyz -0 -0 -180)
 			)
 		)
-		(model "D:/modules/ogham/hardware/ogham/_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
+		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
 			)
@@ -11666,7 +11666,7 @@
 				(xyz -0 -0 -0)
 			)
 		)
-		(model "D:/modules/ogham/hardware/ogham/_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
+		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
 			)
@@ -12371,7 +12371,7 @@
 				(xyz -0 -0 -180)
 			)
 		)
-		(model "D:/modules/ogham/hardware/ogham/_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
+		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
 			)
@@ -13196,7 +13196,7 @@
 				(xyz 0 0 0)
 			)
 		)
-		(model "D:/modules/ogham/hardware/ogham/_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
+		(model "${KIPRJMOD}/../_libs/AudioJacks/AudioJacks.3dshapes/PJ398SM_Hex_nut.step"
 			(offset
 				(xyz 0 -6.5 0)
 			)
@@ -13838,7 +13838,7 @@
 			(uuid "dd34a54c-0a0b-46d4-b1fb-3212096378b8")
 		)
 		(embedded_fonts no)
-		(model "D:/modules/ogham/hardware/ogham/_libs/kicad-3dmodels/potentiometers/ALPHA-RD901F-40.step"
+		(model "${KIPRJMOD}/../_libs/kicad-3dmodels/potentiometers/ALPHA-RD901F-40.step"
 			(offset
 				(xyz 7.5 -2.5 7)
 			)
@@ -15932,7 +15932,7 @@
 			(uuid "0d649161-88c7-47f8-b84b-be228cd8bd0a")
 		)
 		(embedded_fonts no)
-		(model "D:/modules/ogham/hardware/ogham/_libs/DaisySeed/ES_Daisy_Seed_Rev7-1.step"
+		(model "${KIPRJMOD}/../_libs/DaisySeed/ES_Daisy_Seed_Rev7-1.step"
 			(offset
 				(xyz 16.5 1.5 3)
 			)

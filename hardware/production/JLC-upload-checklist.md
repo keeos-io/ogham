@@ -37,7 +37,7 @@ Rotation is the classic assembly error (KiCad vs JLC reference orientation). Eye
 - [ ] Spot-check a couple of the SMD parts on the **top** layer render (double-sided — confirm they're on the correct side)
 
 ## 4. Parts / stock confirmation
-- [ ] **U1 LM4040 (C156302)** — confirm in stock at order time (was ~370 in JLC library; 1 per board)
+- [ ] **U1 LM4040 (C156291, LM4040C50FTA)** — confirm in stock at order time (1 per board). Substituted for C156302 on 2026-09-12; JLCPCB places this part, so kits, build guide and manuals are unaffected
 - [ ] Note any **Extended parts** loading fee (TL072, MCP6004, LM4040, LM393, 74AHCT1G125 are likely Extended, ~$3 one-time each)
 
 ## 5. Place order

@@ -52,17 +52,23 @@ struct FxChainConfig {
     uint8_t cvSlewRise; // 0 = off (instant)
     uint8_t cvSlewFall; // same mapping, applied when the target is below the current output
     uint8_t cvHold;     // 0 = off (every tick); else a power-of-2 hold window, 2..256; DC modes only
-    // Spare byte, held so the persisted layout stays fixed. Removing it would
-    // bump SETTINGS_VERSION and wipe every stored patch.
-    uint8_t reserved0;
+    // Display brightness + auto-off (v1.19, menu "br.NN"): stores the menu
+    // value + 1, where the menu value's units digit is the brightness (0-7) and
+    // a tens digit of 1 means auto-off (valid: 0-7, 10-17). 0 = default (14).
+    // Lives in the byte that was reserved0, so the persisted layout is
+    // unchanged and SETTINGS_VERSION stays put; 0 is what every stored patch
+    // already holds. The withdrawn V/oct start offset used this byte briefly on
+    // 2026-08-11, so boot resets anything that isn't a valid mode to 0.
+    uint8_t displayMode;
 };
 // FX menu fields, in menu order: [0] global on/off, [1] chain toggle,
 // [2..13] = 3 stages x 4 sub-params (level/type/p1/p2), [14] = CV-out mode,
 // [15] = CV Out slew rise, [16] = CV Out slew fall, [17] = CV Out hold, [18] =
 // LPG (consolidated on/off + decay), [19] = CV->Timbre routing, [20] =
-// param-interp grid (q), [21] = Out2 decouple/drone.
+// param-interp grid (q), [21] = Out2 decouple/drone, [22] = display
+// brightness + auto-off.
 // Stage param = 2 + stage*4 + sub.
-static constexpr int FX_NUM_FIELDS   = 22;
+static constexpr int FX_NUM_FIELDS   = 23;
 static constexpr int FX_FIELD_GLOBAL = 0;   // the global on/off
 static constexpr int FX_FIELD_CHAIN  = 1;   // the serial/parallel toggle
 static constexpr int FX_FIELD_CVOUT  = 14;  // CV-out mode (env / DC Out1 / DC Out2)
@@ -73,6 +79,7 @@ static constexpr int FX_FIELD_LPG      = 18; // internal LPG, consolidated on/of
 static constexpr int FX_FIELD_TIMBRECV = 19; // CV->Timbre routing (normal / CV A / CV B)
 static constexpr int FX_FIELD_QUANT  = 20;  // the A/B param-interp grid (q)
 static constexpr int FX_FIELD_DRONE  = 21;  // Out2 decouple/drone toggle
+static constexpr int FX_FIELD_DISPLAY = 22;  // display brightness + auto-off
 static constexpr int FX_TYPE_MAX     = 1;   // 0 = clean, 1 = characterful variant
 
 // Audio pipeline: takes the two engine voices and applies the same lo-fi tone

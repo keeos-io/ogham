@@ -39,6 +39,8 @@ public:
     // "Lp.oF" off or "Lp.NN" on with that decay (value = the raw 0-99 field;
     // 0 means off). Field 19: "t.oFF"/"t.A"/"t.b" CV->Timbre routing. Field 20:
     // "q.oFF".."q.128" param-interp grid. Field 21: "d.on"/"d.oFF" Out2 drone.
+    // Field 22: "br.NN" display brightness (units digit, 0-7) + auto-off
+    // (tens digit 1), so 00-07 or 10-17.
     // blankValue (edit flash) blanks the value, keeps the label.
     void ShowFxEdit(int field, int value, bool parallel, bool blankValue);
 

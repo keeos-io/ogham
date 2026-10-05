@@ -33,6 +33,9 @@ public:
     // Clear display
     void Clear();
 
+    // Turn the display off (LED drive stops; segment data is kept)
+    void DisplayOff();
+
     // Encode a character to 7-segment pattern
     static uint8_t Encode(char c);
 

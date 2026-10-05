@@ -21,6 +21,7 @@ using namespace daisy;
 static constexpr uint8_t CMD_DATA    = 0x40;  // Data command: auto-increment
 static constexpr uint8_t CMD_ADDR    = 0xC0;  // Address command: start at 0
 static constexpr uint8_t CMD_DISPLAY = 0x88;  // Display on + brightness (0-7)
+static constexpr uint8_t CMD_DISPLAY_OFF = 0x80;
 
 // Segment bits (.GFEDCBA)
 enum { SEG_A = 0x01, SEG_B = 0x02, SEG_C = 0x04, SEG_D = 0x08,
@@ -172,6 +173,12 @@ void TM1637::SetBrightness(uint8_t level) {
 void TM1637::Clear() {
     uint8_t segs[4] = {0, 0, 0, 0};
     WriteSegments(segs, 4);
+}
+
+void TM1637::DisplayOff() {
+    Start();
+    WriteByte(CMD_DISPLAY_OFF);
+    Stop();
 }
 
 void TM1637::ShowBorderSegment(int pos) {

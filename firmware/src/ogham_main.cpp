@@ -61,7 +61,7 @@ static BpmClock bpmClock;
 //     future build can read the previously-installed version (e.g. to migrate).
 //     BUMP THIS on every flashed release. ---
 static constexpr int      FW_VER_MAJOR = 1;
-static constexpr int      FW_VER_MINOR = 18;  // 0..99, shown as two digits (v1.18)
+static constexpr int      FW_VER_MINOR = 19;  // 0..99, shown as two digits (v1.19)
 static constexpr uint32_t FW_VERSION   = (uint32_t)FW_VER_MAJOR * 100u + FW_VER_MINOR; // 100 = v1.00
 
 // --- Persisted settings (QSPI). Bump SETTINGS_VERSION to invalidate old layouts. ---
@@ -135,6 +135,46 @@ volatile uint32_t g_syncCount = 0;   // incremented by the gate EXTI ISR
 // --- Timing ---
 static uint32_t lastDisplayTime = 0;
 static constexpr uint32_t DISPLAY_INTERVAL_MS = 33; // ~30Hz
+
+// --- Display brightness + auto-off (v1.19, FX field 22, "br.NN") ---
+// The TM1637's multiplexed LED current couples into the audio outputs as a
+// buzz on the v1.0 board (it needs a series R + bulk cap at J_disp1 to fix in
+// hardware), so the display can go dark DISPLAY_SLEEP_MS after the last
+// movement of the encoder or a knob, and wake on the next one. The Mode
+// switch, CV, gates and clock never wake it. It stays awake in the FX menu
+// and while a value flash is showing, so a flash still gets its full time and
+// then goes straight to dark.
+//
+// One menu value carries both settings: the units digit is the brightness
+// (0-7, the TM1637's eight levels) and a tens digit of 1 adds auto-off, so the
+// valid values are 0-7 and 10-17. FxChainConfig::displayMode stores the menu
+// value + 1, so the 0 that every pre-v1.19 patch holds reads as the default.
+static constexpr uint32_t DISPLAY_SLEEP_MS = 1000;
+static constexpr int DISPLAY_MODE_DEFAULT = 14;   // brightness 4 (as v1.18) + auto-off
+static uint32_t lastControlMs = 0;
+static bool displayAsleep = false;
+static inline void NoteControlMoved() { lastControlMs = System::GetNow(); }
+
+static inline bool DisplayModeValid(int v) { return v >= 0 && v <= 17 && v % 10 <= 7; }
+static int DisplayMode(uint8_t stored) {
+    int v = (int)stored - 1;
+    return DisplayModeValid(v) ? v : DISPLAY_MODE_DEFAULT;
+}
+static inline uint8_t DisplayBrightness(uint8_t stored) { return (uint8_t)(DisplayMode(stored) % 10); }
+static inline bool DisplayAutoOff(uint8_t stored) { return DisplayMode(stored) >= 10; }
+// One detent through 0-7 / 10-17, stepping over 8 and 9 in either direction.
+static uint8_t NextDisplayMode(uint8_t stored, int dir) {
+    int v = DisplayMode(stored) + (dir > 0 ? 1 : -1);
+    if (v == 8 || v == 9) v = (dir > 0) ? 10 : 7;
+    if (v < 0) v = 0;
+    if (v > 17) v = 17;
+    return (uint8_t)(v + 1);
+}
+
+// Tone pot movement needed to wake the display. Rate's flash threshold is
+// 0.001 (~10x the ADC noise); this is a little coarser, since a stray wake
+// costs more than a missed hairline nudge.
+static constexpr float TONE_WAKE_EPS = 0.002f;
 
 // --- Func (encoder) state machine ---
 // SELECT: turn = formula, short-click = switch voice.
@@ -633,6 +673,9 @@ int main(void) {
     uint32_t prevFwVersion = storage.GetSettings().fwVersion;
     (void)prevFwVersion;   // no version-keyed migrations yet
 
+    // The splash and version screens use the saved brightness too.
+    tm1637.SetBrightness(DisplayBrightness(storage.GetSettings().fx.displayMode));
+
     // --- Enable DWT cycle counter for CPU-load measurement (daisy-5wx) ---
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CYCCNT = 0;
@@ -693,6 +736,9 @@ int main(void) {
         engine.SetFormula1(s.out1Formula);
         engine.SetFormula2(s.out2Formula);
         g_fx = s.fx;
+        // The display byte held the withdrawn V/oct start offset for a day;
+        // anything that isn't a valid mode is a leftover, so reset to default.
+        if (!DisplayModeValid((int)g_fx.displayMode - 1)) g_fx.displayMode = 0;
         pipeline.SetFxChain(g_fx);
         engine.SetParamQuant(g_fx.paramQuant);  // engine-side; not via the pipeline
         // Restore a decoupled Out2 drone from its persisted frozen state (exact rate
@@ -761,6 +807,7 @@ int main(void) {
     // Belt-and-suspenders: keep the param-flash muted for a short grace at boot.
     uint32_t bootMs = System::GetNow();
     static constexpr uint32_t PARAM_FLASH_GRACE_MS = 600;
+    lastControlMs = bootMs;   // show the voice for one sleep period after boot
 
     // --- Main loop ---
     while (1) {
@@ -776,6 +823,7 @@ int main(void) {
             if (pressed && !encWasPressed) {            // press start
                 encPressStart = nowMs;
                 encLongFired = false;
+                NoteControlMoved();
                 // Touching the encoder hands the display over at once — an A/B
                 // value flash should not sit in front of the gesture that
                 // follows it.
@@ -814,6 +862,7 @@ int main(void) {
             // Encoder turn (acceleration scales the step by how fast you turn).
             int enc = controls.GetEncoderIncrement();
             if (enc != 0) {
+                NoteControlMoved();
                 display.CancelFlash();   // the turn owns the display from here
                 uint32_t dt = nowMs - lastEncMs;
                 lastEncMs = nowMs;
@@ -852,6 +901,10 @@ int main(void) {
                         // Out2 decouple/drone: CW = decoupled (frozen), CCW = coupled.
                         // The engine snapshots on the couple->decouple edge (below).
                         g_fx.out2Drone = (enc > 0) ? 1 : 0;
+                    } else if (fxField == FX_FIELD_DISPLAY) {
+                        // Display brightness + auto-off: one detent per step, not
+                        // accelerated (only 16 values, and 7 -> 10 is one step).
+                        g_fx.displayMode = NextDisplayMode(g_fx.displayMode, enc);
                     } else if (fxField == FX_FIELD_CVOUT) {
                         // CV-out mode: 0 Env1 / 1 Env2 / 2 DC Out1 / 3 DC Out2.
                         int nv = (int)g_fx.cvOutMode + (enc > 0 ? 1 : -1);
@@ -988,6 +1041,7 @@ int main(void) {
                 const float dRawA = rawScaledA - (float)lastKnobStepA;
                 if (dRawA > PARAM_COMMIT_LSB || dRawA < -PARAM_COMMIT_LSB) {
                     lastKnobStepA = (int32_t)(rawScaledA + 0.5f);
+                    NoteControlMoved();
                     if (flashOk) display.FlashParam('A', a);
                 }
             }
@@ -1010,6 +1064,7 @@ int main(void) {
                 const float dRawB = rawScaledB - (float)lastKnobStepB;
                 if (dRawB > PARAM_COMMIT_LSB || dRawB < -PARAM_COMMIT_LSB) {
                     lastKnobStepB = (int32_t)(rawScaledB + 0.5f);
+                    NoteControlMoved();
                     if (flashOk) display.FlashParam('b', b);
                 }
             }
@@ -1044,6 +1099,7 @@ int main(void) {
                    lastFlashRatePot - rawRatePot >  RATE_FLASH_EPS) {
             lastFlashRatePot = rawRatePot;
             rateMoved = true;
+            NoteControlMoved();
         }
         const bool rateFlashOk = rateMoved
                               && (System::GetNow() - bootMs) > PARAM_FLASH_GRACE_MS
@@ -1143,6 +1199,18 @@ int main(void) {
         // CV->Timbre routing (daisy-gtw): add the borrowed channel's isolated CV as
         // a bidirectional offset around the knob position (self-clamps in SetLofiMacro).
         float timbre = controls.GetLevel();
+        {
+            // Wake the display on a Tone turn. The position is adopted at the
+            // first pass without counting as movement.
+            static float lastTonePot = -1.0f;
+            if (lastTonePot < 0.0f) {
+                lastTonePot = timbre;
+            } else if (timbre - lastTonePot > TONE_WAKE_EPS ||
+                       lastTonePot - timbre > TONE_WAKE_EPS) {
+                lastTonePot = timbre;
+                NoteControlMoved();
+            }
+        }
         if (timbreRoute == 1)      timbre += TIMBRE_CV_DEPTH * cvOnlyA;
         else if (timbreRoute == 2) timbre += TIMBRE_CV_DEPTH * cvOnlyB;
         if (timbre < 0.0f) timbre = 0.0f;
@@ -1230,7 +1298,18 @@ int main(void) {
             lastDisplayTime = now;
 
             display.Update();  // time out any param flash first
-            if (display.IsFlashing()) {
+            // Takes effect with the next write, so editing br.NN previews live.
+            tm1637.SetBrightness(DisplayBrightness(g_fx.displayMode));
+            const bool sleepDue = DisplayAutoOff(g_fx.displayMode)
+                               && funcMode == FUNC_SELECT
+                               && !display.IsFlashing()
+                               && now - lastControlMs >= DISPLAY_SLEEP_MS;
+            if (sleepDue) {
+                // Turn it off once and stop writing: the TM1637 holds itself
+                // dark, and any write below turns it back on, so waking is
+                // just the next normal redraw.
+                if (!displayAsleep) tm1637.DisplayOff();
+            } else if (display.IsFlashing()) {
                 // Deferred param flash: the (blocking) write happens here at 30Hz,
                 // not in the per-loop param path (which would throttle the loop).
                 display.DrawPendingFlash();
@@ -1245,6 +1324,7 @@ int main(void) {
                 else if (fxField == FX_FIELD_CVSLEWRISE) val = g_fx.cvSlewRise;
                 else if (fxField == FX_FIELD_CVSLEWFALL) val = g_fx.cvSlewFall;
                 else if (fxField == FX_FIELD_CVHOLD)   val = (g_fx.cvHold == 0) ? 0 : (1 << g_fx.cvHold);
+                else if (fxField == FX_FIELD_DISPLAY) val = DisplayMode(g_fx.displayMode);
                 else if (fxField != FX_FIELD_CHAIN)  val = *FxFieldPtr(g_fx, fxField);
                 // Edit mode: flash the value at ~80% duty (~600ms period) so it's
                 // clear you're editing vs navigating.
@@ -1259,6 +1339,7 @@ int main(void) {
                     display.ShowVoice(selOut + 1, idx);  // 0-based function number
                 }
             }
+            displayAsleep = sleepDue;
         }
 
         // --- Persist digitally-set settings (debounced ~3s after last change) ---

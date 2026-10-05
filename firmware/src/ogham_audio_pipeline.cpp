@@ -206,7 +206,7 @@ FxChainConfig AudioPipeline::DefaultFxChain() {
     c.cvSlewRise   = 0;  // CV Out slew off (instant)
     c.cvSlewFall   = 0;  // CV Out slew off (instant)
     c.cvHold       = 0;  // CV Out hold off (capture every tick)
-    c.reserved0    = 0;  // spare byte; see FxChainConfig
+    c.displayMode  = 0;  // default: brightness 4 + auto-off (see FxChainConfig)
     return c;
 }
 

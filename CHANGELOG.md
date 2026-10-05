@@ -1,10 +1,35 @@
 # Changelog
 
-Firmware releases. Each version is tagged here, with both encoder builds attached
-to the corresponding GitHub Release and their SHA-256 published.
+Firmware releases. Each version is tagged here, with its binary attached to the
+corresponding GitHub Release and the SHA-256 published. Releases up to 1.17
+carried two encoder builds; from 1.18 there is one.
 
 Full release notes, and the in-browser flasher, live at
 <https://keeos.io/firmware/ogham/>.
+
+## 1.19 - 2026-10-05
+
+The display can dim itself, or turn itself off when you're not touching the
+module.
+
+- **New Menu field 22, `br.NN`.** The last digit is the display brightness, 0-7
+  (the TM1637's eight levels). A first digit of 1 adds auto-off: the display
+  goes dark one second after the last encoder or knob movement and lights on the
+  next one, so `br.00`-`br.07` stay on and `br.10`-`br.17` auto-off. One detent
+  goes from 07 to 10. Default `br.14`: brightness 4 as before, plus auto-off.
+- **Why.** On the v1.0 board the display's multiplexed LED current is audible
+  on the outputs as a faint buzz that grows with brightness. It is not the
+  CLK/DIO bus: a build that stopped writing to the display entirely left it
+  unchanged. Auto-off removes it hands-off; the hardware fix (a series resistor
+  and bulk capacitor at the display connector) is for the next board revision.
+- **What wakes it.** The encoder and the four knobs. The Mode switch, CV, gates
+  and clock never do, so a patched module you aren't touching stays dark. It
+  never sleeps in the Menu or while a value flash is showing.
+- **Settings survive.** The new setting lives in the byte that was `reserved0`,
+  stored as the menu value + 1, so every existing patch reads as the default
+  and `SETTINGS_VERSION` stays 16. Invalid values, left by a field that was
+  withdrawn in development, reset to the default at boot.
+- 128,952 B (98.38%), 2,120 B spare.
 
 ## 1.17 — 2026-08-30
 

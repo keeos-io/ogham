@@ -166,6 +166,19 @@ void Display::ShowFxEdit(int field, int value, bool parallel, bool blankValue) {
         if (blankValue)      { segs[1] = segs[2] = segs[3] = 0x00; }
         else if (value)      { segs[1] = TM1637::Encode('o'); segs[2] = TM1637::Encode('n'); segs[3] = 0x00; }
         else                 { segs[1] = TM1637::Encode('o'); segs[2] = TM1637::Encode('F'); segs[3] = TM1637::Encode('F'); }
+    } else if (field == 22) {
+        // Display brightness + auto-off: "br.00".."br.07" always on,
+        // "br.10".."br.17" auto-off. Always two digits, so the tens digit
+        // (the auto-off flag) is visible even when it is 0.
+        segs[0] = TM1637::Encode('b');
+        segs[1] = TM1637::Encode('r') | 0x80;
+        if (blankValue) { segs[2] = segs[3] = 0x00; }
+        else {
+            if (value < 0) value = 0;
+            if (value > 99) value = 99;
+            segs[2] = TM1637::Encode('0' + (value / 10) % 10);
+            segs[3] = TM1637::Encode('0' + value % 10);
+        }
     } else {
         // Param fields 2..13: "T x. NN" — digit0 = FX (C/F/P), digit1 = sub
         // (L/t/a/b) + separator DP. stage param field = 2 + stage*4 + sub.
